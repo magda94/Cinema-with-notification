@@ -4,7 +4,6 @@ import com.user.service.dtos.UserDto;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.UUID;
 
 @Entity
 @Table(name = "userTable")
@@ -14,8 +13,8 @@ import java.util.UUID;
 @Builder
 public class UserEntity {
     @Id
-    @Column(name = "id")
-    private UUID id;
+    @Column(name = "id", nullable = false)
+    private String uuid;
 
     @Column(name = "login", unique = true)
     private String login;

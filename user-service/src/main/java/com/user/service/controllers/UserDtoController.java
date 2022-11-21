@@ -4,6 +4,7 @@ import com.user.service.dtos.UserDto;
 import com.user.service.services.UserDtoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,12 +30,14 @@ public class UserDtoController {
 
     @PostMapping
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto user) {
-        return null;
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(userService.createUser(user));
     }
 
     @PutMapping("/{login}")
-    public ResponseEntity<UserDto> updateUser(@RequestBody UserDto user) {
-        return null;
+    public ResponseEntity<UserDto> updateUser(@PathVariable String login, @RequestBody UserDto userDto) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userService.updateUser(login, userDto));
     }
 
     @DeleteMapping("/{login}")

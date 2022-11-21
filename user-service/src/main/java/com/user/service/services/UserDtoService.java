@@ -2,12 +2,14 @@ package com.user.service.services;
 
 import com.user.service.dtos.UserDto;
 import com.user.service.entity.UserEntity;
+import com.user.service.exceptions.UserExistException;
 import com.user.service.exceptions.UserNotFoundException;
 import com.user.service.repository.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,11 +34,41 @@ public class UserDtoService {
     }
 
     public UserDto createUser(UserDto userDto) {
-        return null;
+        userEntityRepository.findByLogin(userDto.getLogin())
+                .ifPresent(s -> new UserExistException(String.format("User with login: %s exist in database", userDto.getLogin())));
+
+        UserEntity userEntity = UserEntity.builder()
+                .uuid(UUID.randomUUID().toString())
+                .login(userDto.getLogin())
+                .name(userDto.getName())
+                .lastName(userDto.getLastName())
+                .build();
+
+        return userEntityRepository.save(userEntity)
+                .toDto();
     }
 
-    public UserDto updateUser(UserDto userDto) {
-        return null;
+    public UserDto updateUser(String login, UserDto userDto) {
+        UserEntity userEntity = userEntityRepository.findByLogin(login)
+                .orElseThrow(() ->
+                        new UserNotFoundException("Cannot find user with login: " + login));
+
+        userEntityRepository.findByLogin(userDto.getLogin())
+                .ifPresent(s -> {
+                    if (!login.equals(userDto.getLogin())) {
+                        throw new UserExistException(String.format("User with login: %s exist in database", userDto.getLogin()));
+                    }
+                });
+
+        UserEntity toSaved = UserEntity.builder()
+                .uuid(userEntity.getUuid())
+                .login(userDto.getLogin())
+                .name(userDto.getName())
+                .lastName(userDto.getLastName())
+                .build();
+
+        return userEntityRepository.save(toSaved)
+                .toDto();
     }
 
     public void deleteUser(String login) {
