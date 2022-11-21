@@ -34,10 +34,9 @@ public class UserDtoService {
     }
 
     public UserDto createUser(UserDto userDto) {
-        userEntityRepository.findByLogin(userDto.getLogin())
-                .ifPresent(s -> new UserExistException(String.format("User with login: %s exist in database", userDto.getLogin())));
+        findByLogin(userDto.getLogin());
 
-        UserEntity userEntity = UserEntity.builder()
+        var userEntity = UserEntity.builder()
                 .uuid(UUID.randomUUID().toString())
                 .login(userDto.getLogin())
                 .name(userDto.getName())
@@ -49,9 +48,7 @@ public class UserDtoService {
     }
 
     public UserDto updateUser(String login, UserDto userDto) {
-        UserEntity userEntity = userEntityRepository.findByLogin(login)
-                .orElseThrow(() ->
-                        new UserNotFoundException("Cannot find user with login: " + login));
+        var userEntity = findByLogin(login);
 
         userEntityRepository.findByLogin(userDto.getLogin())
                 .ifPresent(s -> {
@@ -60,7 +57,7 @@ public class UserDtoService {
                     }
                 });
 
-        UserEntity toSaved = UserEntity.builder()
+        var toSaved = UserEntity.builder()
                 .uuid(userEntity.getUuid())
                 .login(userDto.getLogin())
                 .name(userDto.getName())
@@ -72,5 +69,13 @@ public class UserDtoService {
     }
 
     public void deleteUser(String login) {
+        var userEntity = findByLogin(login);
+        userEntityRepository.delete(userEntity);
+    }
+
+    private UserEntity findByLogin(String login) {
+        return userEntityRepository.findByLogin(login)
+                .orElseThrow(() ->
+                        new UserNotFoundException("Cannot find user with login: " + login));
     }
 }

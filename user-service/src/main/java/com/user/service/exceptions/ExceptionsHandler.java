@@ -13,4 +13,9 @@ public class ExceptionsHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Error> handleUserNotFoundException(UserNotFoundException ex) {
         return new ResponseEntity<>(new Error(ex), HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(UserExistException.class)
+    public ResponseEntity<Error> handleUserExistException(UserExistException ex) {
+        return new ResponseEntity<>(new Error(ex), HttpStatus.CONFLICT);
+    }
 }

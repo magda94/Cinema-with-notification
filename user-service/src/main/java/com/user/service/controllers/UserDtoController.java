@@ -42,6 +42,7 @@ public class UserDtoController {
 
     @DeleteMapping("/{login}")
     public ResponseEntity deleteUser(@PathVariable String login) {
-        return null;
+        userService.deleteUser(login);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
