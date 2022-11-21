@@ -6,6 +6,7 @@ import com.user.service.exceptions.UserExistException;
 import com.user.service.exceptions.UserNotFoundException;
 import com.user.service.repository.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserDtoService {
 
     private final UserEntityRepository userEntityRepository;
@@ -43,8 +45,9 @@ public class UserDtoService {
                 .lastName(userDto.getLastName())
                 .build();
 
-        return userEntityRepository.save(userEntity)
-                .toDto();
+        var saved = userEntityRepository.save(userEntity);
+        log.info("Created user - UUID({})", saved.getUuid());
+        return saved.toDto();
     }
 
     public UserDto updateUser(String login, UserDto userDto) {
@@ -64,13 +67,15 @@ public class UserDtoService {
                 .lastName(userDto.getLastName())
                 .build();
 
-        return userEntityRepository.save(toSaved)
-                .toDto();
+        var saved = userEntityRepository.save(toSaved);
+        log.info("Updated user - UUID({})", saved.getUuid());
+        return saved.toDto();
     }
 
     public void deleteUser(String login) {
         var userEntity = findByLogin(login);
         userEntityRepository.delete(userEntity);
+        log.info("Deleted user - UUID({})", userEntity.getUuid());
     }
 
     private UserEntity findByLogin(String login) {
