@@ -3,28 +3,32 @@ package com.user.service.controllers;
 import com.user.service.dtos.UserDto;
 import com.user.service.services.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController("/users")
+@RestController
+@RequestMapping("/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<List<UserDto>> getUsers() {
-        return null;
+        log.info("IN");
+        return ResponseEntity.ok(userService.getUserList());
     }
 
     @GetMapping("/{login}")
     public ResponseEntity<UserDto> getUserWithLogin(@PathVariable String login) {
-        return null;
+        return ResponseEntity.ok(userService.getUserWithLogin(login));
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto user) {
         return null;
     }
