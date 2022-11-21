@@ -1,7 +1,7 @@
 package com.user.service.controllers;
 
 import com.user.service.dtos.UserDto;
-import com.user.service.services.UserService;
+import com.user.service.services.UserDtoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -13,13 +13,12 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @Slf4j
-public class UserController {
+public class UserDtoController {
 
-    private final UserService userService;
+    private final UserDtoService userService;
 
     @GetMapping("")
     public ResponseEntity<List<UserDto>> getUsers() {
-        log.info("IN");
         return ResponseEntity.ok(userService.getUserList());
     }
 

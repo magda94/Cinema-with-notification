@@ -12,9 +12,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserDtoService {
 
     private final UserEntityRepository userEntityRepository;
+
 
     public List<UserDto> getUserList() {
         return userEntityRepository.findAll()
