@@ -37,7 +37,10 @@ public class UserDtoService {
 
     public UserDto createUser(UserDto userDto) {
         userEntityRepository.findByLogin(userDto.getLogin())
-                        .ifPresent(s -> new UserExistException(String.format("User with login: %s exists", userDto.getLogin())));
+                        .ifPresent(s -> {
+                            throw new UserExistException(String.format("User with login: %s exists", userDto.getLogin()));
+                        }
+        );
 
         var userEntity = UserEntity.builder()
                 .uuid(UUID.randomUUID().toString())
