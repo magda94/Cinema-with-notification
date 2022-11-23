@@ -11,7 +11,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
-//@DataJpaTest
 @ContextConfiguration(initializers = PostgresqlContainer.DataSourceInitializer.class)
 public class PostgresqlContainer {
 
