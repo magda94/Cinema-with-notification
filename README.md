@@ -14,7 +14,7 @@ All services are implemented in Java 17 and SpringBoot 2.x.
 To use this project, it is needed to prepare Docker environment
 and then run docker-compose.yaml from docker-composes/postgres directory.
 
-#user-service
+# user-service
 This service stores users data. It has all necessary CRUD operations and REST API.
 The service uses PostgresSQL database. 
 Service can be run with 'dev' profile (used in Docker environment) or 'local' profile (used for development or tests).
