@@ -1,15 +1,15 @@
-# Use postgres/example user/password credentials
 version: '3.5'
 
 services:
   # user-service
   user-service:
     container_name: user-service
-    build: ../../user-service
+    build: user-service
     ports:
       - "8080:8080"
     networks:
       - postgres
+
   # postgresSQL
   postgres:
     container_name: postgres_container
@@ -25,7 +25,7 @@ services:
       - postgres
     restart: unless-stopped
     volumes:
-      - ./docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+      - ./scripts/docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
 
   # pgAdmin
   pgadmin:
@@ -46,6 +46,7 @@ services:
 
   #mongoDB
   mongodb:
+    container_name: mongoDB
     image: mongo:5.0
     ports:
       - "27017:27017"
