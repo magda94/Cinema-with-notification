@@ -3,6 +3,6 @@ server:
 spring:
   data:
     mongodb:
-      user: root
-      password: pass
-      uri: mongodb://mongodb:27017/db
+#      user: root
+#      password: pass
+      uri: mongodb://root:pass@mongodb:27017/db?authSource=admin
