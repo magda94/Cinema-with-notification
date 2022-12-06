@@ -1,4 +1,4 @@
-package com.film.service;
+package com.film.service.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

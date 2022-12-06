@@ -1,12 +1,13 @@
 package com.film.service.dto;
 
-import com.film.service.Genre;
 import lombok.Builder;
 import lombok.Data;
 
 @Builder
 @Data
 public class FilmDto {
+
+    private int cinemaFilmId;
 
     private String name;
 
