@@ -3,6 +3,8 @@ package com.film.service.service;
 import com.film.service.document.FilmDocument;
 import com.film.service.dto.DirectorDto;
 import com.film.service.dto.FilmDto;
+import com.film.service.exceptions.FilmNotFoundException;
+import com.film.service.exceptions.FilmWithIdExistException;
 import com.film.service.repository.FilmRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,18 +34,34 @@ public class FilmDtoService {
 
     public FilmDto getFilmWithId(int cinemaFilmId) {
         return filmRepository.findByCinemaFilmId(cinemaFilmId)
-                .toDto();
+                .map(FilmDocument::toDto)
+                .orElseThrow(() -> new FilmNotFoundException("Cannot find film with cinemaFilmId: " + cinemaFilmId));
     }
 
     public FilmDto addFilm(FilmDto filmDto) {
+        filmRepository.findByCinemaFilmId(filmDto.getCinemaFilmId())
+                .ifPresent(s -> {
+                    throw new FilmWithIdExistException(String.format("Film with cinemaFilmId : %d exists in database", filmDto.getCinemaFilmId()));
+                });
+
         return filmRepository.save(toDocument(filmDto))
                 .toDto();
     }
 
     public FilmDto updateFilm(int cinemaFilmId, FilmDto filmDto) {
         var foundFilm = filmRepository.findByCinemaFilmId(cinemaFilmId);
+
+        if (foundFilm.isEmpty()) {
+            throw new FilmNotFoundException("Cannot find film with cinemaFilmId: " + cinemaFilmId);
+        }
+
+        if(filmRepository.existsByCinemaFilmId(filmDto.getCinemaFilmId()) &&
+                cinemaFilmId != filmDto.getCinemaFilmId()) {
+            throw new FilmWithIdExistException(String.format("Film with cinemaFilmId: %d exists in database", filmDto.getCinemaFilmId()));
+        }
+
         var newFilmDocument = toDocument(filmDto);
-        newFilmDocument.setId(foundFilm.getId());
+        newFilmDocument.setId(foundFilm.get().getId());
 
         return filmRepository.save(newFilmDocument).toDto();
     }
