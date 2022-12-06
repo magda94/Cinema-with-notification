@@ -1,6 +1,6 @@
 package com.film.service.document;
 
-import com.film.service.Genre;
+import com.film.service.dto.Genre;
 import com.film.service.dto.DirectorDto;
 import com.film.service.dto.FilmDto;
 import lombok.Builder;
@@ -15,6 +15,8 @@ public class FilmDocument {
 
     @Id
     private String id;
+
+    private int cinemaFilmId;
 
     private String name;
 
@@ -31,6 +33,7 @@ public class FilmDocument {
     public FilmDto toDto() {
         return FilmDto.builder()
                 .name(this.name)
+                .cinemaFilmId(this.cinemaFilmId)
                 .duration(this.duration)
                 .genre(this.genre)
                 .year(this.year)
