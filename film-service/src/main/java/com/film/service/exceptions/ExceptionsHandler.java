@@ -10,12 +10,27 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class ExceptionsHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(FilmNotFoundException.class)
-    public ResponseEntity<String> handleUserNotFoundException(FilmNotFoundException ex) {
+    public ResponseEntity<String> handleFilmNotFoundException(FilmNotFoundException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(FilmWithIdExistException.class)
-    public ResponseEntity<String> handleUserExistException(FilmWithIdExistException ex) {
+    public ResponseEntity<String> handleFilmWithIdExistException(FilmWithIdExistException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<String> handleCommentNotFoundException(CommentNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CommentWithIdExistException.class)
+    public ResponseEntity<String> handleCommentWithIdExistException(CommentWithIdExistException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ForbiddenParameterChangedException.class)
+    public ResponseEntity<String> handleForbiddenParameterChangedException(ForbiddenParameterChangedException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 }
