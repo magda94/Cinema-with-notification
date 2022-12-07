@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -24,14 +25,21 @@ public class CommentDtoController {
         log.info("Get all comments request");
         return ResponseEntity.ok(commentDtoService.getAllComments());
     }
+    
+    @GetMapping("/{cinemaFilmId}/dateSorted")
+    public ResponseEntity<ExtendCommentDto> getCommentsForFilmDateSorted(@PathVariable("cinemaFilmId") int cinemaFilmId, boolean reversed) {
+        log.info("Get sorted by date comments, reversed : {}, for film with id: {}", reversed, cinemaFilmId);
+        return ResponseEntity.ok(commentDtoService.getCommentsWithSortedDates(cinemaFilmId, reversed));
+    }
 
-    //TODO: get all comments for film sorted from earliest to latest
+    @GetMapping("/{cinemaFilmId}/starsSorted")
+    public ResponseEntity<ExtendCommentDto> getCommentForFilmWithSortedStars(@PathVariable("cinemaFilmId") int cinemaFilmId, boolean reversed) {
+        log.info("Get sorted by star comments, reserved: {}, for film with id: {}", reversed, cinemaFilmId);
+        return ResponseEntity.ok(commentDtoService.getCommentsWithSortedStars(cinemaFilmId, reversed));
+    }
 
-    //TODO: get all comments for film sorted stars
-
-    //TODO: valid data, not null
     @PostMapping("")
-    public ResponseEntity<CommentDto> addComment(@RequestBody CommentDto commentDto) {
+    public ResponseEntity<CommentDto> addComment(@RequestBody @Valid CommentDto commentDto) {
         log.info("Create new comment with cinemaCommentId: {} for film : {} request",
                 commentDto.getCinemaCommentId(), commentDto.getCinemaFilmId());
         return ResponseEntity.status(HttpStatus.CREATED)

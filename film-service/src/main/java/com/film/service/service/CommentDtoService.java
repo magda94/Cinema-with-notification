@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +31,56 @@ public class CommentDtoService {
         return filmRepository.findAll()
                 .stream()
                 .map(this::toExtendCommentDto)
+                .collect(Collectors.toList());
+    }
+
+    public ExtendCommentDto getCommentsWithSortedStars(int cinemaFilmId, boolean reversed) {
+        var film = filmRepository.findByCinemaFilmId(cinemaFilmId);
+        if (film.isEmpty()) {
+            log.error("Cannot find film with id: {}", cinemaFilmId);
+            throw new FilmWithIdExistException(String.format("Cannot find film with id: %s", cinemaFilmId));
+        }
+
+        List<CommentDto> sortedComments;
+        if (reversed) {
+            sortedComments = getSortedComments(cinemaFilmId, Comparator.comparingInt(CommentDocument::getStars).reversed());
+        } else {
+            sortedComments = getSortedComments(cinemaFilmId, Comparator.comparingInt(CommentDocument::getStars));
+        }
+
+        return ExtendCommentDto.builder()
+                .cinemaFilmId(cinemaFilmId)
+                .filmName(film.get().getName())
+                .comments(sortedComments)
+                .build();
+    }
+
+    public ExtendCommentDto getCommentsWithSortedDates(int cinemaFilmId, boolean reversed) {
+        var film = filmRepository.findByCinemaFilmId(cinemaFilmId);
+        if (film.isEmpty()) {
+            log.error("Cannot find film with id: {}", cinemaFilmId);
+            throw new FilmWithIdExistException(String.format("Cannot find film with id: %s", cinemaFilmId));
+        }
+
+        List<CommentDto> sortedComments;
+        if (reversed) {
+            sortedComments = getSortedComments(cinemaFilmId, Comparator.comparing(CommentDocument::getCreateDate).reversed());
+        } else {
+            sortedComments = getSortedComments(cinemaFilmId, Comparator.comparing(CommentDocument::getCreateDate));
+        }
+
+        return ExtendCommentDto.builder()
+                .cinemaFilmId(cinemaFilmId)
+                .filmName(film.get().getName())
+                .comments(sortedComments)
+                .build();
+    }
+
+    private List<CommentDto> getSortedComments(int cinemaFilmId, Comparator<CommentDocument> action) {
+        return commentRepository.findAllByCinemaFilmId(cinemaFilmId)
+                .stream()
+                .sorted(action)
+                .map(CommentDocument::toDto)
                 .collect(Collectors.toList());
     }
 
