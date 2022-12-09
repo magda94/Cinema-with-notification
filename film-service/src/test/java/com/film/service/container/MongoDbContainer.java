@@ -14,7 +14,6 @@ public class MongoDbContainer {
 
     @Container
     private static final MongoDBContainer database = new MongoDBContainer(DockerImageName.parse("mongo:5.0.0"));
-           // .withExposedPorts(27017);
 
     public static class DataSourceInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext>  {
 
