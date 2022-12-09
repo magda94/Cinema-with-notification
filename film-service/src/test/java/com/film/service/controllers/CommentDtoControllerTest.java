@@ -1,12 +1,16 @@
 package com.film.service.controllers;
 
+import autofixture.publicinterface.Any;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.film.service.container.MongoDbContainer;
 import com.film.service.dto.CommentDto;
 import com.film.service.repository.CommentRepository;
 import com.film.service.repository.FilmRepository;
 import com.film.service.utils.CommentDocumentUtils;
+import com.film.service.utils.CommentDtoUtils;
 import com.film.service.utils.FilmDocumentUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.mapping.TextScore;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,8 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -179,26 +183,125 @@ class CommentDtoControllerTest extends MongoDbContainer {
 
     }
 
-//    @Test
-//    public void shouldAddComment() throws Exception {
-//        //GIVEN
-//        var film = FilmDocumentUtils.createFilmDocument();
-//        filmRepository.save(film);
-//
-//        var comment = CommentDtoUtils.createCommentDtoForFilmId(film.getCinemaFilmId());
-//
-//        //WHEN
-//        mockMvc.perform(post("/comments")
-//                .accept(MediaType.APPLICATION_JSON)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(asJson(comment)))
-//                .andExpect(status().isOk());
-//
-//        //THEN
-//        var result = commentRepository.findByCinemaCommentId(comment.getCinemaCommentId());
-//        assertThat(result.isPresent()).isTrue();
-//        assertThat(result.get().toDto()).isEqualTo(comment);
-//    }
+    @Test
+    public void shouldAddComment() throws Exception {
+        //GIVEN
+        var film = FilmDocumentUtils.createFilmDocument();
+        filmRepository.save(film);
+
+        var comment = CommentDtoUtils.createCommentDtoForFilmId(film.getCinemaFilmId());
+
+        //WHEN
+        mockMvc.perform(post("/comments")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJson(comment)))
+                .andExpect(status().isCreated());
+
+        //THEN
+        var result = commentRepository.findByCinemaCommentId(comment.getCinemaCommentId());
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get().toDto().getCinemaCommentId()).isEqualTo(comment.getCinemaCommentId());
+    }
+
+    @Test
+    public void shouldNotAddCommentWhenCommentIdBusy() throws Exception {
+        //GIVEN
+        var film = FilmDocumentUtils.createFilmDocument();
+        filmRepository.save(film);
+
+        var commentDocument = CommentDocumentUtils.createCommentDocument();
+        var comment = CommentDtoUtils.createCommentDtoWithId(commentDocument.getCinemaCommentId());
+        commentRepository.save(commentDocument);
+
+        //WHEN
+        mockMvc.perform(post("/comments")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(comment)))
+                .andExpect(status().isConflict());
+
+        //THEN
+        assertThat(commentRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldNotAddCommentWhenFilmNotExist() throws Exception {
+        //GIVEN
+        var film = FilmDocumentUtils.createFilmDocument();
+        filmRepository.save(film);
+
+        var comment = CommentDtoUtils.createCommentDtoForFilmId(Any.intValue());
+
+        //WHEN
+        mockMvc.perform(post("/comments")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(comment)))
+                .andExpect(status().isNotFound());
+
+        //THEN
+        assertThat(commentRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    public void shouldUpdateComment() throws Exception {
+        //GIVEN
+        var film = FilmDocumentUtils.createFilmDocument();
+        filmRepository.save(film);
+
+        var commentDocument = CommentDocumentUtils.createCommentDocument();
+        var comment = CommentDtoUtils.createCommentDtoWithChangedComment(commentDocument);
+        commentRepository.save(commentDocument);
+
+        //WHEN
+        mockMvc.perform(put("/comments/" + commentDocument.getCinemaCommentId())
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJson(comment)))
+                .andExpect(status().isAccepted());
+
+        //THEN
+        var result = commentRepository.findByCinemaCommentId(comment.getCinemaCommentId());
+        assertThat(result.isPresent()).isTrue();
+        assertThat(result.get().getComment()).isEqualTo(comment.getComment());
+    }
+
+    @Test
+    public void shouldNotUpdateCommentWhenCannotFindId() throws Exception {
+        //GIVEN
+        var comment = CommentDtoUtils.createCommentDto();
+
+        //WHEN
+        mockMvc.perform(put("/comments/" + Any.intValue())
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJson(comment)))
+                .andExpect(status().isNotFound());
+
+        //THEN
+        assertThat(commentRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    public void shouldNotUpdateCommentWhenForbiddenParamIsChanged() throws Exception {
+        //GIVEN
+        var commentDocument = CommentDocumentUtils.createCommentDocument();
+        commentRepository.save(commentDocument);
+
+        var comment = CommentDtoUtils.createCommentDtoWithChangedComment(commentDocument);
+        comment.setCinemaFilmId(Any.intOtherThan(commentDocument.getCinemaFilmId()));
+
+        //WHEN
+        mockMvc.perform(put("/comments/" + commentDocument.getCinemaCommentId())
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJson(comment)))
+                .andExpect(status().isConflict());
+
+        //THEN
+        assertThat(commentRepository.count()).isEqualTo(1);
+    }
 
     @Test
     public void shouldDeleteComment() throws Exception {
@@ -235,6 +338,8 @@ class CommentDtoControllerTest extends MongoDbContainer {
 
     private String asJson(CommentDto commentDto) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         return objectMapper.writeValueAsString(commentDto);
     }
 }

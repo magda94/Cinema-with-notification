@@ -1,12 +1,24 @@
 package com.film.service.utils;
 
 import autofixture.publicinterface.Any;
+import com.film.service.document.CommentDocument;
 import com.film.service.dto.CommentDto;
 
 import java.time.Instant;
 import java.util.Random;
 
 public class CommentDtoUtils {
+
+    public static CommentDto createCommentDtoWithChangedComment(CommentDocument commentDocument) {
+        return CommentDto.builder()
+                .userLogin(commentDocument.getUserLogin())
+                .cinemaFilmId(commentDocument.getCinemaFilmId())
+                .cinemaCommentId(commentDocument.getCinemaCommentId())
+                .createDate(commentDocument.getCreateDate())
+                .comment(Any.string())
+                .stars(commentDocument.getStars())
+                .build();
+    }
 
     public static CommentDto createCommentDtoForFilmId(int filmId) {
         return CommentDto.builder()

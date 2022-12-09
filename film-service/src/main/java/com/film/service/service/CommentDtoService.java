@@ -4,10 +4,7 @@ import com.film.service.document.CommentDocument;
 import com.film.service.document.FilmDocument;
 import com.film.service.dto.CommentDto;
 import com.film.service.dto.ExtendCommentDto;
-import com.film.service.exceptions.CommentNotFoundException;
-import com.film.service.exceptions.CommentWithIdExistException;
-import com.film.service.exceptions.FilmWithIdExistException;
-import com.film.service.exceptions.ForbiddenParameterChangedException;
+import com.film.service.exceptions.*;
 import com.film.service.repository.CommentRepository;
 import com.film.service.repository.FilmRepository;
 import lombok.RequiredArgsConstructor;
@@ -91,7 +88,7 @@ public class CommentDtoService {
 
         if (!filmRepository.existsByCinemaFilmId(commentDto.getCinemaFilmId())) {
             log.error("Comment cannot be added due to missing film with id: {}", commentDto.getCinemaFilmId());
-            throw new FilmWithIdExistException(String.format("Cannot find film with id: %s", commentDto.getCinemaFilmId()));
+            throw new FilmNotFoundException(String.format("Cannot find film with id: %s", commentDto.getCinemaFilmId()));
         }
         return commentRepository.save(toDocument(commentDto))
                 .toDto();
@@ -110,7 +107,9 @@ public class CommentDtoService {
             throw new ForbiddenParameterChangedException("Some of forbidden parameter was changed");
         }
 
-        return commentRepository.save(toDocument(commentDto))
+        var newDocument = toDocument(commentDto);
+        newDocument.setId(foundDocument.getId());
+        return commentRepository.save(newDocument)
                 .toDto();
     }
 
@@ -140,8 +139,7 @@ public class CommentDtoService {
     private boolean isAnyForbiddenParamChanged(CommentDocument commentDocument, CommentDto changedComment) {
         return !commentDocument.getUserLogin().equals(changedComment.getUserLogin()) ||
                 commentDocument.getCinemaCommentId() != changedComment.getCinemaCommentId() ||
-                commentDocument.getCinemaFilmId() != changedComment.getCinemaFilmId() ||
-                !commentDocument.getCreateDate().equals(changedComment.getCreateDate());
+                commentDocument.getCinemaFilmId() != changedComment.getCinemaFilmId();
     }
 
     private CommentDocument toDocument(CommentDto commentDto) {
