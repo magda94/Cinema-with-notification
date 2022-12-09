@@ -10,6 +10,15 @@ services:
     networks:
       - postgres
 
+  #film-service
+  film-service:
+    container_name: film-service
+    build: ./film-service
+    ports:
+      - "8081:8081"
+    networks:
+      - mongodb
+
   # postgresSQL
   postgres:
     container_name: postgres_container
