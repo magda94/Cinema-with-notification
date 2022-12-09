@@ -3,6 +3,7 @@ package com.film.service.container;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.support.TestPropertySourceUtils;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -19,7 +20,9 @@ public class MongoDbContainer {
 
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
-
+            TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
+                    applicationContext,
+                    "spring.data.mongodb.uri=" + database.getReplicaSetUrl());
         }
     }
 }
