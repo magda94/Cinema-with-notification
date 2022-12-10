@@ -8,9 +8,9 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - postgres
+      - postgres-user
 
-  #film-service
+  # film-service
   film-service:
     container_name: film-service
     build: ./film-service
@@ -19,9 +19,9 @@ services:
     networks:
       - mongodb
 
-  # postgresSQL
-  postgres:
-    container_name: postgres_container
+  # postgresSQL - user-service
+  postgres-user:
+    container_name: user_postgres_container
     image: postgres:14.1-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -31,10 +31,28 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - postgres
+      - postgres-user
     restart: unless-stopped
     volumes:
-      - ./scripts/docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+      - ./scripts/docker_postgres_init_user.sql:/docker-entrypoint-initdb.d/docker_postgres_init_user.sql
+
+
+  # postgresSQL - cinema
+  postgres-cinema:
+    container_name: cinema_postgres_container
+    image: postgres:14.1-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: cinemaDB
+      PGDATA: /data/postgres
+    ports:
+      - "5433:5432"
+    networks:
+      - postgres-cinema
+    restart: unless-stopped
+    volumes:
+      - ./scripts/docker_postgres_init_cinema.sql:/docker-entrypoint-initdb.d/docker_postgres_init_cinema.sql
 
   # pgAdmin
   pgadmin:
@@ -50,10 +68,11 @@ services:
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
-      - postgres
+      - postgres-user
+      - postgres-cinema
     restart: unless-stopped
 
-  #mongoDB
+  # mongoDB
   mongodb:
     container_name: mongoDB
     image: mongo:5.0
@@ -67,13 +86,14 @@ services:
     restart: unless-stopped
 
 networks:
-  postgres:
+  postgres-user:
     driver: bridge
   mongodb:
+    driver: bridge
+  postgres-cinema:
     driver: bridge
 
 volumes:
-  postgres:
+  postgres-user:
+  postgres-cinema:
   pgadmin:
-  user-service:
-  mongodb:
