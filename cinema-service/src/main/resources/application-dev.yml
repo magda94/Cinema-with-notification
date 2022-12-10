@@ -1,10 +1,11 @@
-server:
-  port: 8082
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/cinemaDB
+    url: jdbc:postgresql://postgres-cinema:5432/cinemaDB
     username: postgres
     password: postgres
+    config:
+      activate:
+        on-profile: dev
   jpa:
     hibernate:
       ddl-auto: update
