@@ -60,7 +60,7 @@ public class TicketController {
 
     @DeleteMapping("/film/{filmId}")
     public void deleteTicketsForFilm(@PathVariable("filmId") int filmId) {
-        log.info("Delete tickets for film with id: '{}' requests");
+        log.info("Delete tickets for film with id: '{}' requests", filmId);
         ticketService.deleteTicketsForFilm(filmId);
     }
 }
