@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,15 +39,14 @@ public class TicketController {
     }
 
     @PostMapping("")
-    //TODO: valid ticket
-    public ResponseEntity<TicketDto> addTicket(@RequestBody TicketDto ticketDto) {
+    public ResponseEntity<TicketDto> addTicket(@RequestBody @Valid TicketDto ticketDto) {
         log.info("Add ticket with id: '{}' request", ticketDto.getFilmId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ticketService.addTicket(ticketDto));
     }
 
     @PutMapping("/{ticketUuid}")
-    public ResponseEntity<TicketDto> updateTicket(@PathVariable("ticketUuid") UUID ticketUuid, @RequestBody TicketDto ticketDto) {
+    public ResponseEntity<TicketDto> updateTicket(@PathVariable("ticketUuid") UUID ticketUuid, @RequestBody @Valid TicketDto ticketDto) {
         log.info("Update ticket with id: '{}' request", ticketUuid);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(ticketService.updateTicket(ticketUuid, ticketDto));
