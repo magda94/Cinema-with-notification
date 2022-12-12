@@ -23,7 +23,7 @@ public class TicketEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "uuid", nullable = false)
+    @Column(name = "uuid", nullable = false, unique = true)
     private UUID uuid;
 
     @Column(name = "filmId", nullable = false)

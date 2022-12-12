@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Builder
@@ -14,11 +15,14 @@ import java.util.UUID;
 @AllArgsConstructor
 public class TicketDto {
 
+    @NotNull
     private UUID uuid;
 
+    @NotNull
     private int filmId;
 
     private String userLogin;
 
+    @NotNull
     private TicketStatus status;
 }
