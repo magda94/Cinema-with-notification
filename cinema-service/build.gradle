@@ -28,6 +28,10 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.assertj:assertj-core:3.8.0'
+    testImplementation 'org.testcontainers:testcontainers:1.17.6'
+    testImplementation 'org.testcontainers:postgresql:1.17.6'
+    testImplementation 'org.testcontainers:junit-jupiter:1.17.6'
+    testImplementation 'com.github.autofixture:autofixturegenerator:2.1.10'
 }
 
 tasks.named('test') {
