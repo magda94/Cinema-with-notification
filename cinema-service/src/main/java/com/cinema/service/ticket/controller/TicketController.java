@@ -40,7 +40,7 @@ public class TicketController {
 
     @PostMapping("")
     public ResponseEntity<TicketDto> addTicket(@RequestBody @Valid TicketDto ticketDto) {
-        log.info("Add ticket with id: '{}' request", ticketDto.getFilmId());
+        log.info("Add ticket with id: '{}' request", ticketDto.getUuid());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ticketService.addTicket(ticketDto));
     }
