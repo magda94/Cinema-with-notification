@@ -84,6 +84,13 @@ public class RoomService {
     }
 
     public void deleteRoom(int roomId) {
+        var room = roomRepository.findByRoomId(roomId)
+                .orElseThrow(() -> {
+                    log.error("Cannot find room with id: '{}'", roomId);
+                    throw new RoomNotFoundException("Cannot find room with id: " + roomId);
+                });
+        seatRepository.deleteAllByRoom(room);
+
         roomRepository.deleteByRoomId(roomId);
     }
 
