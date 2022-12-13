@@ -1,6 +1,7 @@
 package com.cinema.service.room.entity;
 
 
+import com.cinema.service.room.dto.SeatDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,4 +33,13 @@ public class SeatEntity {
     @ManyToOne
     @JoinColumn(name = "room_id")
     private RoomEntity room;
+
+    public SeatDto toSeatDto() {
+        return SeatDto.builder()
+                .roomId(this.room.getRoomId())
+                .rowNumber(this.rowNumber)
+                .columnNumber(this.columnNumber)
+                .reserved(this.reserved)
+                .build();
+    }
 }
