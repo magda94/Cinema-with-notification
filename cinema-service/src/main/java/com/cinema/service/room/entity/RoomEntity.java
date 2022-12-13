@@ -1,9 +1,7 @@
 package com.cinema.service.room.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.cinema.service.room.dto.RoomDto;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -14,6 +12,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = "seats")
 public class RoomEntity {
 
     @Id
@@ -31,4 +30,12 @@ public class RoomEntity {
 
     @OneToMany(mappedBy = "room") //field in SeatEntity
     private Set<SeatEntity> seats;
+
+    public RoomDto toRoomDto() {
+        return RoomDto.builder()
+                .roomId(this.roomId)
+                .columnsNumber(this.columnsNumber)
+                .rowsNumber(this.rowsNumber)
+                .build();
+    }
 }
