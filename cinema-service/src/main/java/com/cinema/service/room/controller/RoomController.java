@@ -45,10 +45,9 @@ public class RoomController {
                 .body(roomService.addRoom(roomDto));
     }
 
-    //TODO: delete room
     @DeleteMapping("/{roomId}")
     public void deleteRoom(@PathVariable("roomId") int roomId) {
-        log.info("Delete room with id: '{}' request");
+        log.info("Delete room with id: '{}' request", roomId);
         roomService.deleteRoom(roomId);
     }
 }
