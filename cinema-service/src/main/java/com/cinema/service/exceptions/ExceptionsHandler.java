@@ -19,6 +19,11 @@ public class ExceptionsHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(ShowNotFoundException.class)
+    public ResponseEntity<String> handleShowNotFoundException(ShowNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(TicketExistsException.class)
     public ResponseEntity<String> handleTicketExistException(TicketExistsException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
@@ -26,6 +31,11 @@ public class ExceptionsHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(RoomExistsException.class)
     public ResponseEntity<String> handleRoomExistException(RoomExistsException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ShowExistsException.class)
+    public ResponseEntity<String> handleShowExistException(ShowExistsException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 }
