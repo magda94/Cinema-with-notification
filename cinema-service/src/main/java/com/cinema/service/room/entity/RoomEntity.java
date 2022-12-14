@@ -13,7 +13,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = "seats")
+@EqualsAndHashCode(exclude = {"seats", "shows"})
 public class RoomEntity {
 
     @Id

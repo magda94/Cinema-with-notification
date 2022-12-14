@@ -4,16 +4,19 @@ import com.cinema.service.exceptions.RoomExistsException;
 import com.cinema.service.exceptions.RoomNotFoundException;
 import com.cinema.service.room.dto.ExtendRoomDto;
 import com.cinema.service.room.dto.RoomDto;
+import com.cinema.service.room.dto.ShowInfo;
 import com.cinema.service.room.entity.RoomEntity;
 import com.cinema.service.room.entity.SeatEntity;
 import com.cinema.service.room.repository.RoomRepository;
 import com.cinema.service.room.repository.SeatRepository;
+import com.cinema.service.show.entity.ShowEntity;
 import com.cinema.service.show.repository.ShowRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,15 +52,29 @@ public class RoomService {
                     throw new RoomNotFoundException("Cannot find room with id: " + roomId);
                 });
 
+        return ExtendRoomDto.builder()
+                .roomId(roomId)
+                .showInfo(getShowInfoSet(room))
+                .build();
+    }
+
+    private Set<ShowInfo> getShowInfoSet(RoomEntity room) {
         var seats = room.getSeats()
                 .stream().map(SeatEntity::toSeatDto)
                 .collect(Collectors.toSet());
 
-        return ExtendRoomDto.builder()
-                .roomId(roomId)
-                .seats(seats)
-                .totalReservedNumber(seatRepository.countByRoomAndReserved(room, true))
-                .build();
+        return room.getShows()
+                .stream()
+                .map(show ->
+                        ShowInfo.builder()
+                                .showId(show.getShowId())
+                                .startDate(show.getStartDate())
+                                .filmId(room.getRoomId())
+                                .seats(seats)
+                                .totalReservedNumber(seatRepository.countByRoomAndReserved(room, true))
+                                .build()
+                )
+                .collect(Collectors.toSet());
     }
 
     public RoomDto addRoom(RoomDto roomDto) {
