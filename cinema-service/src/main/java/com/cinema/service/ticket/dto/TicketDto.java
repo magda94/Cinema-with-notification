@@ -21,6 +21,11 @@ public class TicketDto {
     @NotNull
     private int filmId;
 
+    @NotNull
+    private int showId;
+
+    private PlaceDto place;
+
     private String userLogin;
 
     @NotNull

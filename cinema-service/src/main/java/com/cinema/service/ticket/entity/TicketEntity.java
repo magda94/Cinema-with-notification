@@ -1,5 +1,6 @@
 package com.cinema.service.ticket.entity;
 
+import com.cinema.service.show.entity.ShowEntity;
 import com.cinema.service.ticket.TicketStatus;
 import com.cinema.service.ticket.dto.TicketDto;
 import lombok.AllArgsConstructor;
@@ -36,12 +37,21 @@ public class TicketEntity {
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
 
+    @ManyToOne
+    @JoinColumn(name = "show_id")
+    private ShowEntity show;
+
+    @Embedded
+    private Place place;
+
     public TicketDto toTicketDto() {
         return TicketDto.builder()
                 .uuid(this.uuid)
                 .filmId(this.filmId)
+                .showId(this.show.getShowId())
                 .userLogin(this.userLogin)
                 .status(this.status)
+                .place(this.place.toPlaceDto())
                 .build();
     }
 }

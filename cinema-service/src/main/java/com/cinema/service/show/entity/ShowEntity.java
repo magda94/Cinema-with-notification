@@ -2,13 +2,12 @@ package com.cinema.service.show.entity;
 
 import com.cinema.service.room.entity.RoomEntity;
 import com.cinema.service.show.dto.ShowDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.cinema.service.ticket.entity.TicketEntity;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.Set;
 
 @Entity
 @Table(name = "shows")
@@ -16,6 +15,7 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = "tickets")
 public class ShowEntity {
 
     @Id
@@ -34,6 +34,9 @@ public class ShowEntity {
     @ManyToOne
     @JoinColumn(name = "room_id") //id in RoomEntity
     private RoomEntity room;
+
+    @OneToMany(mappedBy = "show")
+    private Set<TicketEntity> tickets;
 
     public ShowDto toShowDto() {
         return ShowDto.builder()
