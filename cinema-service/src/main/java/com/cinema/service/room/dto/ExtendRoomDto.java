@@ -15,9 +15,5 @@ public class ExtendRoomDto {
 
     private int roomId;
 
-//    private Set<SeatDto> seats;
-//
-//    private int totalReservedNumber;
-
     private Set<ShowInfo> showInfo;
 }
