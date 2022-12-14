@@ -8,6 +8,7 @@ import com.cinema.service.room.entity.RoomEntity;
 import com.cinema.service.room.entity.SeatEntity;
 import com.cinema.service.room.repository.RoomRepository;
 import com.cinema.service.room.repository.SeatRepository;
+import com.cinema.service.show.repository.ShowRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final SeatRepository seatRepository;
+    private final ShowRepository showRepository;
 
     public List<RoomDto> getAllRooms() {
         return roomRepository.findAll()
@@ -89,6 +91,8 @@ public class RoomService {
                     throw new RoomNotFoundException("Cannot find room with id: " + roomId);
                 });
         seatRepository.deleteAllByRoom(room);
+
+        showRepository.deleteAllByRoom(room);
 
         roomRepository.deleteByRoomId(roomId);
     }
