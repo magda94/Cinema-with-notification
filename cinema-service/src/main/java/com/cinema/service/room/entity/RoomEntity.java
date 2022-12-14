@@ -1,6 +1,7 @@
 package com.cinema.service.room.entity;
 
 import com.cinema.service.room.dto.RoomDto;
+import com.cinema.service.show.entity.ShowEntity;
 import lombok.*;
 
 import javax.persistence.*;
@@ -30,6 +31,9 @@ public class RoomEntity {
 
     @OneToMany(mappedBy = "room") //field in SeatEntity
     private Set<SeatEntity> seats;
+
+    @OneToMany(mappedBy = "room") //field in ShowEntity
+    private Set<ShowEntity> shows;
 
     public RoomDto toRoomDto() {
         return RoomDto.builder()
