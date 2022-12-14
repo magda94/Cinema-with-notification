@@ -8,6 +8,8 @@ import com.cinema.service.room.repository.RoomRepository;
 import com.cinema.service.room.repository.SeatRepository;
 import com.cinema.service.room.utils.RoomDtoUtils;
 import com.cinema.service.room.utils.RoomEntityUtils;
+import com.cinema.service.show.repository.ShowRepository;
+import com.cinema.service.show.utils.ShowEntityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,11 +47,15 @@ class RoomControllerTest extends PostgresqlContainer {
     private SeatRepository seatRepository;
 
     @Autowired
+    private ShowRepository showRepository;
+
+    @Autowired
     private MockMvc mockMvc;
 
     @BeforeEach
     public void before() {
         seatRepository.deleteAll();
+        showRepository.deleteAll();
         roomRepository.deleteAll();
     }
 
@@ -101,6 +107,9 @@ class RoomControllerTest extends PostgresqlContainer {
         var room = RoomEntityUtils.createRoomEntity();
         roomRepository.save(room);
 
+        var show = ShowEntityUtils.createShowEntityWithRoom(room);
+        showRepository.save(show);
+
         int reservedNumber = 0;
         for (int col=1; col <= room.getColumnsNumber(); col++) {
             for (int row=1; row <= room.getRowsNumber(); row++) {
@@ -123,8 +132,10 @@ class RoomControllerTest extends PostgresqlContainer {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.roomId", equalTo(room.getRoomId())))
-                .andExpect(jsonPath("$.seats", hasSize(room.getColumnsNumber() * room.getRowsNumber())))
-                .andExpect(jsonPath("$.totalReservedNumber", equalTo(reservedNumber)));
+                .andExpect(jsonPath("$.showInfo", hasSize(1)))
+                .andExpect(jsonPath("$.showInfo[0].showId", equalTo(show.getShowId())))
+                .andExpect(jsonPath("$.showInfo[0].seats", hasSize(room.getColumnsNumber() * room.getRowsNumber())))
+                .andExpect(jsonPath("$.showInfo[0].totalReservedNumber", equalTo(reservedNumber)));
 
     }
 

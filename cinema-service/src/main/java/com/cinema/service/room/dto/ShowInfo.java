@@ -5,15 +5,22 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.Set;
 
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExtendRoomDto {
+public class ShowInfo {
 
-    private int roomId;
+    private int showId;
 
-    private Set<ShowInfo> showInfo;
+    private Instant startDate;
+
+    private int filmId;
+
+    private Set<SeatDto> seats;
+
+    private int totalReservedNumber;
 }
