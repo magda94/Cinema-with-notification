@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 public class RoomService {
 
     private final RoomRepository roomRepository;
-//    private final SeatRepository seatRepository;
     private final ShowRepository showRepository;
     private final TicketRepository ticketRepository;
 

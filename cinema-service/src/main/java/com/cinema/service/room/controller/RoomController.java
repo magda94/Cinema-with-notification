@@ -32,7 +32,7 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getRoomWithId(roomId));
     }
 
-    @GetMapping("/{roomId}/seats")
+    @GetMapping("/{roomId}/tickets")
     public ResponseEntity<ExtendRoomDto> getAllDataForRoom(@PathVariable("roomId") int roomId) {
         log.info("Get all information about room with id: '{}' request", roomId);
         return ResponseEntity.ok(roomService.getAllDataForRoom(roomId));

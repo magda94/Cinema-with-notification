@@ -1,6 +1,12 @@
 package com.cinema.service.ticket.controller;
 
+import autofixture.publicinterface.Any;
 import com.cinema.service.container.PostgresqlContainer;
+import com.cinema.service.room.entity.RoomEntity;
+import com.cinema.service.room.repository.RoomRepository;
+import com.cinema.service.room.utils.RoomEntityUtils;
+import com.cinema.service.show.repository.ShowRepository;
+import com.cinema.service.show.utils.ShowEntityUtils;
 import com.cinema.service.ticket.dto.TicketDto;
 import com.cinema.service.ticket.repository.TicketRepository;
 import com.cinema.service.ticket.utils.TicketDtoUtils;
@@ -39,12 +45,20 @@ class TicketControllerTest extends PostgresqlContainer {
     private TicketRepository ticketRepository;
 
     @Autowired
+    private ShowRepository showRepository;
+
+    @Autowired
+    private RoomRepository roomRepository;
+
+    @Autowired
     private MockMvc mockMvc;
 
 
     @BeforeEach
     public void before() {
         ticketRepository.deleteAll();
+        showRepository.deleteAll();
+        roomRepository.deleteAll();
     }
 
     @Test
@@ -60,7 +74,13 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldGetAllFilms() throws Exception {
         //GIVEN
-        var ticket = TicketEntityUtils.createTicketEntity();
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.save(show);
+
+        var ticket = TicketEntityUtils.createTicketEntity(show);
         ticketRepository.save(ticket);
 
         //WHEN-THEN
@@ -74,8 +94,14 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldGetTicketWithId() throws Exception {
         //GIVEN
-        var ticket1 = TicketEntityUtils.createTicketEntity();
-        var ticket2 = TicketEntityUtils.createTicketEntity();
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.save(show);
+
+        var ticket1 = TicketEntityUtils.createTicketEntity(show);
+        var ticket2 = TicketEntityUtils.createTicketEntity(show);
 
         ticketRepository.saveAll(List.of(ticket1, ticket2));
 
@@ -91,7 +117,7 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldReturnNotFoundWhenTicketWithIdNotExist() throws Exception {
         //WHEN-THEN
-        mockMvc.perform(get("/tickets/" + UUID.randomUUID().toString())
+        mockMvc.perform(get("/tickets/" + UUID.randomUUID())
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -99,9 +125,15 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldReturnTicketsForFilm() throws Exception {
         //GIVEN
-        var ticket1 = TicketEntityUtils.createTicketEntityWithFilmId(1);
-        var ticket2 = TicketEntityUtils.createTicketEntityWithFilmId(2);
-        var ticket3 = TicketEntityUtils.createTicketEntityWithFilmId(1);
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.save(show);
+
+        var ticket1 = TicketEntityUtils.createTicketEntityWithFilmId(1, show);
+        var ticket2 = TicketEntityUtils.createTicketEntityWithFilmId(2, show);
+        var ticket3 = TicketEntityUtils.createTicketEntityWithFilmId(1, show);
 
         ticketRepository.saveAll(List.of(ticket1, ticket2, ticket3));
 
@@ -117,7 +149,13 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldAddTicket() throws Exception {
         //GIVEN
-        var ticket = TicketDtoUtils.createTicketDto();
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.save(show);
+
+        var ticket = TicketDtoUtils.createTicketDto(show.getShowId());
 
         //WHEN
         mockMvc.perform(post("/tickets")
@@ -134,10 +172,16 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldNotAddTicketWhenUuidIsBusy() throws Exception {
         //GIVEN
-        var ticket = TicketEntityUtils.createTicketEntityWithUuid(UUID.randomUUID());
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.save(show);
+
+        var ticket = TicketEntityUtils.createTicketEntityWithUuid(UUID.randomUUID(), show);
         ticketRepository.save(ticket);
 
-        var newTicket = TicketDtoUtils.createTicketDtoWithUuid(ticket.getUuid());
+        var newTicket = TicketDtoUtils.createTicketDtoWithUuid(ticket.getUuid(), show.getShowId());
 
         //WHEN
         mockMvc.perform(post("/tickets")
@@ -153,10 +197,16 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldUpdateTicket() throws Exception {
         //GIVEN
-        var ticket = TicketEntityUtils.createTicketEntityWithFilmId(1);
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.save(show);
+
+        var ticket = TicketEntityUtils.createTicketEntityWithFilmId(1, show);
         ticketRepository.save(ticket);
 
-        var changedTicket = TicketDtoUtils.createTicketDtoWithUuid(ticket.getUuid());
+        var changedTicket = TicketDtoUtils.createTicketDtoWithUuid(ticket.getUuid(), show.getShowId());
         changedTicket.setFilmId(2);
 
         //WHEN
@@ -176,7 +226,7 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldNotUpdateTicketWhenNotExist() throws Exception {
         //GIVEN
-        var ticket = TicketDtoUtils.createTicketDto();
+        var ticket = TicketDtoUtils.createTicketDto(Any.intValue());
 
         //WHEN
         mockMvc.perform(put("/tickets/" + UUID.randomUUID())
@@ -192,12 +242,18 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldNotUpdateTicketWhenUuidIsBusy() throws Exception {
         //GIVEN
-        var ticket1 = TicketEntityUtils.createTicketEntityWithFilmId(1);
-        var ticket2 = TicketEntityUtils.createTicketEntityWithFilmId(1);
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.save(show);
+
+        var ticket1 = TicketEntityUtils.createTicketEntityWithFilmId(1, show);
+        var ticket2 = TicketEntityUtils.createTicketEntityWithFilmId(1, show);
 
         ticketRepository.saveAll(List.of(ticket1, ticket2));
 
-        var changedTicket = TicketDtoUtils.createTicketDtoWithUuid(ticket2.getUuid());
+        var changedTicket = TicketDtoUtils.createTicketDtoWithUuid(ticket2.getUuid(), show.getShowId());
         changedTicket.setFilmId(2);
 
         //WHEN
@@ -216,7 +272,13 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldDeleteFilmWithId() throws Exception {
         //GIVEN
-        var ticket = TicketEntityUtils.createTicketEntity();
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.save(show);
+
+        var ticket = TicketEntityUtils.createTicketEntity(show);
 
         //WHEN
         mockMvc.perform(delete("/tickets/" + ticket.getUuid().toString())
@@ -230,10 +292,16 @@ class TicketControllerTest extends PostgresqlContainer {
     @Test
     public void shouldDeleteAllTicketsForFilm() throws Exception {
         //GIVEN
-        var ticket1 = TicketEntityUtils.createTicketEntityWithFilmId(1);
-        var ticket2 = TicketEntityUtils.createTicketEntityWithFilmId(2);
-        var ticket3 = TicketEntityUtils.createTicketEntityWithFilmId(1);
-        var ticket4 = TicketEntityUtils.createTicketEntityWithFilmId(2);
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.save(show);
+
+        var ticket1 = TicketEntityUtils.createTicketEntityWithFilmId(1, show);
+        var ticket2 = TicketEntityUtils.createTicketEntityWithFilmId(2, show);
+        var ticket3 = TicketEntityUtils.createTicketEntityWithFilmId(1, show);
+        var ticket4 = TicketEntityUtils.createTicketEntityWithFilmId(2, show);
 
         ticketRepository.saveAll(List.of(ticket1, ticket2, ticket3, ticket4));
 
