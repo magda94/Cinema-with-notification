@@ -47,9 +47,8 @@ public class RoomService {
                     throw new RoomNotFoundException("Cannot find room with id: " + roomId);
                 });
 
-        var seats = seatRepository.findByRoom(room)
-                .stream()
-                .map(SeatEntity::toSeatDto)
+        var seats = room.getSeats()
+                .stream().map(SeatEntity::toSeatDto)
                 .collect(Collectors.toSet());
 
         return ExtendRoomDto.builder()
