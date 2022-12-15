@@ -1,10 +1,12 @@
 package com.cinema.service.user.controller;
 
+import com.cinema.service.user.dto.UnregisterUserRequest;
 import com.cinema.service.user.dto.UserRequest;
 import com.cinema.service.user.dto.UserResponse;
 import com.cinema.service.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,5 +27,12 @@ public class UserController {
     public ResponseEntity<UserResponse> registerUser(@RequestBody @Valid UserRequest userRequest) {
         log.info("Register user with login: '{}' request", userRequest.getLogin());
         return ResponseEntity.ok(userService.registerUser(userRequest));
+    }
+
+    @PostMapping("/unregister")
+    public ResponseEntity unregisterUser(@RequestBody @Valid UnregisterUserRequest userRequest) {
+        log.info("Unregister user with login: '{}' request", userRequest.getLogin());
+        userService.unregisterUser(userRequest);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }
