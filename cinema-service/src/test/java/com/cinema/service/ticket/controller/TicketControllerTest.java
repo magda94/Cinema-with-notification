@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 
@@ -240,6 +241,7 @@ class TicketControllerTest extends PostgresqlContainer {
     }
 
     @Test
+    @Transactional
     public void shouldNotUpdateTicketWhenUuidIsBusy() throws Exception {
         //GIVEN
         var room = RoomEntityUtils.createRoomEntity();
