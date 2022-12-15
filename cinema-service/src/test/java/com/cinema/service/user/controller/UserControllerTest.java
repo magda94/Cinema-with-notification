@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class UserControllerTest {
 
-    @Autowired
+//    @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
@@ -44,7 +44,7 @@ class UserControllerTest {
 
     @BeforeEach
     public void before() {
-//        mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
+        mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
     }
 
     @Test
