@@ -13,7 +13,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = {"seats", "shows"})
+@EqualsAndHashCode(exclude = {"shows"})
 public class RoomEntity {
 
     @Id
@@ -28,9 +28,6 @@ public class RoomEntity {
 
     @Column(name = "total_columns_number", nullable = false)
     private int columnsNumber;
-
-    @OneToMany(mappedBy = "room") //field in SeatEntity
-    private Set<SeatEntity> seats;
 
     @OneToMany(mappedBy = "room") //field in ShowEntity
     private Set<ShowEntity> shows;

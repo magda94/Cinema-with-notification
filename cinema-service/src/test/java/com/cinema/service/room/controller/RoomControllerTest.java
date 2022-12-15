@@ -3,13 +3,15 @@ package com.cinema.service.room.controller;
 import autofixture.publicinterface.Any;
 import com.cinema.service.container.PostgresqlContainer;
 import com.cinema.service.room.dto.RoomDto;
-import com.cinema.service.room.entity.SeatEntity;
 import com.cinema.service.room.repository.RoomRepository;
-import com.cinema.service.room.repository.SeatRepository;
 import com.cinema.service.room.utils.RoomDtoUtils;
 import com.cinema.service.room.utils.RoomEntityUtils;
 import com.cinema.service.show.repository.ShowRepository;
 import com.cinema.service.show.utils.ShowEntityUtils;
+import com.cinema.service.ticket.TicketStatus;
+import com.cinema.service.ticket.entity.Place;
+import com.cinema.service.ticket.entity.TicketEntity;
+import com.cinema.service.ticket.repository.TicketRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +26,7 @@ import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingExcept
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Random;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,17 +47,17 @@ class RoomControllerTest extends PostgresqlContainer {
     private RoomRepository roomRepository;
 
     @Autowired
-    private SeatRepository seatRepository;
+    private ShowRepository showRepository;
 
     @Autowired
-    private ShowRepository showRepository;
+    private TicketRepository ticketRepository;
 
     @Autowired
     private MockMvc mockMvc;
 
     @BeforeEach
     public void before() {
-        seatRepository.deleteAll();
+        ticketRepository.deleteAll();
         showRepository.deleteAll();
         roomRepository.deleteAll();
     }
@@ -115,26 +118,27 @@ class RoomControllerTest extends PostgresqlContainer {
             for (int row=1; row <= room.getRowsNumber(); row++) {
                 boolean reserved = new Random().nextBoolean();
                 reservedNumber += reserved ? 1 : 0;
-                var newSeat = SeatEntity.builder()
-                        .room(room)
-                        .rowNumber(row)
-                        .columnNumber(col)
-                        .reserved(reserved)
+                var newTicket = TicketEntity.builder()
+                        .show(show)
+                        .uuid(UUID.randomUUID())
+                        .filmId(show.getFilmId())
+                        .place(new Place(room.getRoomId(), row, col))
+                        .status(reserved ? TicketStatus.PAID : TicketStatus.FREE)
                         .build();
 
-                seatRepository.save(newSeat);
+                ticketRepository.save(newTicket);
             }
         }
 
         //WHEN-THEN
-        mockMvc.perform(get(String.format("/rooms/%d/seats", room.getRoomId()))
+        mockMvc.perform(get(String.format("/rooms/%d/tickets", room.getRoomId()))
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.roomId", equalTo(room.getRoomId())))
                 .andExpect(jsonPath("$.showInfo", hasSize(1)))
                 .andExpect(jsonPath("$.showInfo[0].showId", equalTo(show.getShowId())))
-                .andExpect(jsonPath("$.showInfo[0].seats", hasSize(room.getColumnsNumber() * room.getRowsNumber())))
+                .andExpect(jsonPath("$.showInfo[0].tickets", hasSize(room.getColumnsNumber() * room.getRowsNumber())))
                 .andExpect(jsonPath("$.showInfo[0].totalReservedNumber", equalTo(reservedNumber)));
 
     }
@@ -142,7 +146,7 @@ class RoomControllerTest extends PostgresqlContainer {
     @Test
     public void shouldReturnNotFoundWhenRoomNotExistForExtended() throws Exception {
         //WHEN-THEN
-                mockMvc.perform(get(String.format("/rooms/%d/seats", Any.intValue()))
+                mockMvc.perform(get(String.format("/rooms/%d/tickets", Any.intValue()))
                         .accept(MediaType.APPLICATION_JSON))
                         .andDo(print())
                         .andExpect(status().isNotFound());
@@ -164,7 +168,6 @@ class RoomControllerTest extends PostgresqlContainer {
         //THEN
         assertThat(roomRepository.findByRoomId(room.getRoomId()).get().toRoomDto())
                 .isEqualTo(room);
-        assertThat(seatRepository.count()).isEqualTo(room.getColumnsNumber() * room.getRowsNumber());
     }
 
     @Test

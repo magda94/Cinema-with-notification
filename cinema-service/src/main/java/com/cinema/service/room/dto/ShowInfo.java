@@ -1,5 +1,6 @@
 package com.cinema.service.room.dto;
 
+import com.cinema.service.ticket.dto.TicketDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +21,7 @@ public class ShowInfo {
 
     private int filmId;
 
-    private Set<SeatDto> seats;
+    private Set<TicketDto> tickets;
 
     private int totalReservedNumber;
 }

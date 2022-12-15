@@ -1,7 +1,10 @@
 package com.cinema.service.ticket.service;
 
+import com.cinema.service.exceptions.ShowNotFoundException;
 import com.cinema.service.exceptions.TicketExistsException;
 import com.cinema.service.exceptions.TicketNotFoundException;
+import com.cinema.service.show.entity.ShowEntity;
+import com.cinema.service.show.repository.ShowRepository;
 import com.cinema.service.ticket.dto.TicketDto;
 import com.cinema.service.ticket.entity.TicketEntity;
 import com.cinema.service.ticket.repository.TicketRepository;
@@ -19,6 +22,8 @@ import java.util.stream.Collectors;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
+
+    private final ShowRepository showRepository;
 
     public List<TicketDto> getAllTickets() {
         return ticketRepository.findAll()
@@ -49,7 +54,13 @@ public class TicketService {
             throw new TicketExistsException(String.format("Ticket with uuid: '%s' exists in database", ticketDto.getUuid()));
         }
 
-        return ticketRepository.save(toEntity(ticketDto))
+        var show = showRepository.findByShowId(ticketDto.getShowId())
+                .orElseThrow(() -> {
+                    log.error("Cannot fins show with id: {}", ticketDto.getShowId());
+                    throw new ShowNotFoundException("Cannot find show with id: " + ticketDto.getShowId());
+                });
+
+        return ticketRepository.save(toEntity(ticketDto, show))
                 .toTicketDto();
     }
 
@@ -65,7 +76,13 @@ public class TicketService {
                         throw new TicketNotFoundException("Cannot find ticket with id: " + ticketUuid);
                 });
 
-        TicketEntity newTicket = toEntity(changedTicket);
+        var show = showRepository.findByShowId(changedTicket.getShowId())
+                .orElseThrow( () -> {
+                    log.error("Cannot fins show with id: {}", changedTicket.getShowId());
+                    throw new ShowNotFoundException("Cannot find show with id: " + changedTicket.getShowId());
+                });
+
+        TicketEntity newTicket = toEntity(changedTicket, show);
         newTicket.setId(ticket.getId());
 
         return ticketRepository.save(newTicket)
@@ -80,12 +97,14 @@ public class TicketService {
         ticketRepository.deleteAllByFilmId(filmId);
     }
 
-    private TicketEntity toEntity(TicketDto ticketDto) {
+    private TicketEntity toEntity(TicketDto ticketDto, ShowEntity show) {
         return TicketEntity.builder()
                 .uuid(ticketDto.getUuid())
                 .filmId(ticketDto.getFilmId())
                 .userLogin(ticketDto.getUserLogin())
                 .status(ticketDto.getStatus())
+                .place(ticketDto.getPlace().toPlace())
+                .show(show)
                 .build();
     }
 }

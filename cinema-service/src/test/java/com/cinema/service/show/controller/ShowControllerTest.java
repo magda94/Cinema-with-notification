@@ -8,6 +8,7 @@ import com.cinema.service.show.dto.ShowDto;
 import com.cinema.service.show.repository.ShowRepository;
 import com.cinema.service.show.utils.ShowDtoUtils;
 import com.cinema.service.show.utils.ShowEntityUtils;
+import com.cinema.service.ticket.repository.TicketRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -44,10 +45,14 @@ class ShowControllerTest extends PostgresqlContainer {
     private RoomRepository roomRepository;
 
     @Autowired
+    private TicketRepository ticketRepository;
+
+    @Autowired
     private MockMvc mockMvc;
 
     @BeforeEach
     public void before() {
+        ticketRepository.deleteAll();
         showRepository.deleteAll();
         roomRepository.deleteAll();
     }
@@ -118,6 +123,7 @@ class ShowControllerTest extends PostgresqlContainer {
 
         //THEN
         assertThat(showRepository.existsByShowId(newShow.getShowId())).isTrue();
+        assertThat(ticketRepository.count()).isEqualTo(room.getRowsNumber() * room.getColumnsNumber());
     }
 
     @Test

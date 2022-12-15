@@ -6,11 +6,12 @@ import com.cinema.service.room.dto.ExtendRoomDto;
 import com.cinema.service.room.dto.RoomDto;
 import com.cinema.service.room.dto.ShowInfo;
 import com.cinema.service.room.entity.RoomEntity;
-import com.cinema.service.room.entity.SeatEntity;
 import com.cinema.service.room.repository.RoomRepository;
-import com.cinema.service.room.repository.SeatRepository;
 import com.cinema.service.show.entity.ShowEntity;
 import com.cinema.service.show.repository.ShowRepository;
+import com.cinema.service.ticket.TicketStatus;
+import com.cinema.service.ticket.entity.TicketEntity;
+import com.cinema.service.ticket.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,8 +26,8 @@ import java.util.stream.Collectors;
 public class RoomService {
 
     private final RoomRepository roomRepository;
-    private final SeatRepository seatRepository;
     private final ShowRepository showRepository;
+    private final TicketRepository ticketRepository;
 
     public List<RoomDto> getAllRooms() {
         return roomRepository.findAll()
@@ -59,22 +60,29 @@ public class RoomService {
     }
 
     private Set<ShowInfo> getShowInfoSet(RoomEntity room) {
-        var seats = room.getSeats()
-                .stream().map(SeatEntity::toSeatDto)
-                .collect(Collectors.toSet());
-
         return room.getShows()
                 .stream()
-                .map(show ->
-                        ShowInfo.builder()
-                                .showId(show.getShowId())
-                                .startDate(show.getStartDate())
-                                .filmId(room.getRoomId())
-                                .seats(seats)
-                                .totalReservedNumber(seatRepository.countByRoomAndReserved(room, true))
-                                .build()
-                )
+                .map(show -> getShowInfo(show, room))
                 .collect(Collectors.toSet());
+    }
+
+    private ShowInfo getShowInfo(ShowEntity show, RoomEntity room) {
+        var tickets = show.getTickets()
+                .stream()
+                .map(TicketEntity::toTicketDto)
+                .collect(Collectors.toSet());
+
+        var reservedNumber = tickets.stream()
+                .filter(ticket -> !ticket.getStatus().equals(TicketStatus.FREE))
+                .count();
+
+        return ShowInfo.builder()
+                .showId(show.getShowId())
+                .startDate(show.getStartDate())
+                .filmId(room.getRoomId())
+                .tickets(tickets)
+                .totalReservedNumber((int) reservedNumber)
+                .build();
     }
 
     public RoomDto addRoom(RoomDto roomDto) {
@@ -85,18 +93,6 @@ public class RoomService {
 
         var savedRoom = roomRepository.save(toEntity(roomDto));
 
-        for (int row = 1; row <= roomDto.getRowsNumber(); row++) {
-            for (int col = 1; col <= roomDto.getColumnsNumber(); col++) {
-                var newSeat = SeatEntity.builder()
-                        .room(savedRoom)
-                        .columnNumber(col)
-                        .rowNumber(row)
-                        .reserved(false)
-                        .build();
-
-                seatRepository.save(newSeat);
-            }
-        }
 
         return savedRoom.toRoomDto();
     }
@@ -107,7 +103,10 @@ public class RoomService {
                     log.error("Cannot find room with id: '{}'", roomId);
                     throw new RoomNotFoundException("Cannot find room with id: " + roomId);
                 });
-        seatRepository.deleteAllByRoom(room);
+
+        room.getShows()
+                .stream()
+                .forEach(show -> ticketRepository.deleteAllByShow(show));
 
         showRepository.deleteAllByRoom(room);
 
