@@ -17,9 +17,20 @@ services:
     ports:
       - "8081:8081"
     networks:
-      - mongodb
+      - film-mongodb
 
-  # postgresSQL - user-service
+  # cinema-service
+  cinema-service:
+    container_name: cinema-service
+    build: ./cinema-service
+    ports:
+      - "8082:8082"
+    networks:
+      - postgres-cinema
+      - postgres-user
+      - film-mongodb
+
+    # postgresSQL - user-service
   postgres-user:
     container_name: user_postgres_container
     image: postgres:14.1-alpine
@@ -73,7 +84,7 @@ services:
     restart: unless-stopped
 
   # mongoDB
-  mongodb:
+  film-mongodb:
     container_name: mongoDB
     image: mongo:5.0
     ports:
@@ -82,13 +93,13 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=pass
     networks:
-      - mongodb
+      - film-mongodb
     restart: unless-stopped
 
 networks:
   postgres-user:
     driver: bridge
-  mongodb:
+  film-mongodb:
     driver: bridge
   postgres-cinema:
     driver: bridge
