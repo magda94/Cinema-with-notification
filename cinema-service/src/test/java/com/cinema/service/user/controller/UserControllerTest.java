@@ -29,13 +29,13 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
+//@ExtendWith(SpringExtension.class)
+//@SpringBootTest
 //@AutoConfigureMockMvc
 class UserControllerTest {
 
 //    @Autowired
-    private RestTemplate restTemplate;
+//    private RestTemplate restTemplate;
 
 //    @Autowired
 //    private MockMvc mockMvc;
@@ -50,7 +50,7 @@ class UserControllerTest {
     @Test
     public void shouldRegisterUser() throws Exception {
         //GIVEN
-        var userRequest = createAnyUserRequest();
+//        var userRequest = createAnyUserRequest();
 
 //        mockRestServiceServer.expect(ExpectedCount.once(),
 //                        requestTo(new URI("http://localhost:8080/users")))
@@ -69,9 +69,9 @@ class UserControllerTest {
 //                .andReturn();
 
         //THEN
-        var exceptedResponse = UserResponse.builder()
-                .login(userRequest.getLogin())
-                .build();
+//        var exceptedResponse = UserResponse.builder()
+//                .login(userRequest.getLogin())
+//                .build();
 
 //        assertThat(result.getResponse().getContentAsString())
 //                .isEqualTo(asJson(exceptedResponse));
@@ -80,7 +80,7 @@ class UserControllerTest {
     @Test
     public void shouldNotRegisterUser() throws Exception {
         //GIVEN
-        var userRequest = createAnyUserRequest();
+//        var userRequest = createAnyUserRequest();
 
 //        mockRestServiceServer.expect(ExpectedCount.once(),
 //                        requestTo(new URI("http://localhost:8080/users")))
