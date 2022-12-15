@@ -17,4 +17,4 @@ spring:
 com:
   cinema:
     service:
-      user: postgres-cinema:8080
+      user: user-service:8080
