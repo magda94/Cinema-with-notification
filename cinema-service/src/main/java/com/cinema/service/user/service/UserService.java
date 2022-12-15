@@ -1,6 +1,7 @@
 package com.cinema.service.user.service;
 
 import com.cinema.service.exceptions.UserConnectionException;
+import com.cinema.service.user.dto.UnregisterUserRequest;
 import com.cinema.service.user.dto.UserRequest;
 import com.cinema.service.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,17 @@ public class UserService {
         }catch (Exception ex) {
             log.error("Error during connection with user service. Message: {}", ex.getMessage());
             throw new UserConnectionException("Cannot register user", HttpStatus.FORBIDDEN);
+        }
+    }
+
+    public void unregisterUser(UnregisterUserRequest userRequest) {
+        String url = "http://" + userHost + "/users/" + userRequest.getLogin();
+
+        try {
+            restTemplate.delete(url);
+        } catch (Exception ex) {
+            log.error("Error during connection with user service. Message: {}", ex.getMessage());
+            throw new UserConnectionException("Cannot unregister user", HttpStatus.FORBIDDEN);
         }
     }
 }

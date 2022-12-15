@@ -2,6 +2,7 @@ package com.cinema.service.user.controller;
 
 import autofixture.publicinterface.Any;
 import com.cinema.service.container.PostgresqlContainer;
+import com.cinema.service.user.dto.UnregisterUserRequest;
 import com.cinema.service.user.dto.UserRequest;
 import com.cinema.service.user.dto.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -102,11 +103,56 @@ class UserControllerTest extends PostgresqlContainer {
                 .andReturn();
     }
 
+    @Test
+    public void shouldUnregisterUser() throws Exception {
+        //GIVEN
+        var unregisterRequest = createAnyUnregisterUserRequest();
+
+        mockRestServiceServer.expect(ExpectedCount.once(),
+                        requestTo(new URI("http://localhost:8080/users/" + unregisterRequest.getLogin())))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.OK));
+
+        //WHEN-THEN
+        mockMvc.perform(post("/users/unregister")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(unregisterRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    public void shouldNotUnregisterUser() throws Exception {
+        //GIVEN
+        var unregisterRequest = createAnyUnregisterUserRequest();
+
+        mockRestServiceServer.expect(ExpectedCount.once(),
+                        requestTo(new URI("http://localhost:8080/users/" + unregisterRequest.getLogin())))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withStatus(HttpStatus.CONFLICT)
+                        .body(asJson(new RuntimeException())));
+
+        //WHEN-THEN
+        mockMvc.perform(post("/users/unregister")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(unregisterRequest)))
+                .andExpect(status().isForbidden())
+                .andReturn();
+    }
+
     private UserRequest createAnyUserRequest() {
         return UserRequest.builder()
                 .login(Any.string())
                 .name(Any.string())
                 .lastName(Any.string())
+                .build();
+    }
+
+    private UnregisterUserRequest createAnyUnregisterUserRequest() {
+        return UnregisterUserRequest.builder()
+                .login(Any.string())
                 .build();
     }
 
