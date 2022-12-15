@@ -40,11 +40,11 @@ class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private MockRestServiceServer mockRestServiceServer;
+//    private MockRestServiceServer mockRestServiceServer;
 
     @BeforeEach
     public void before() {
-        mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
+//        mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
     }
 
     @Test
@@ -52,13 +52,13 @@ class UserControllerTest {
         //GIVEN
         var userRequest = createAnyUserRequest();
 
-        mockRestServiceServer.expect(ExpectedCount.once(),
-                        requestTo(new URI("http://localhost:8080/users")))
-                .andExpect(method(HttpMethod.POST))
-                .andRespond(withStatus(HttpStatus.CREATED)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(asJson(userRequest))
-                );
+//        mockRestServiceServer.expect(ExpectedCount.once(),
+//                        requestTo(new URI("http://localhost:8080/users")))
+//                .andExpect(method(HttpMethod.POST))
+//                .andRespond(withStatus(HttpStatus.CREATED)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .body(asJson(userRequest))
+//                );
 
         //WHEN
         var result = mockMvc.perform(post("/users/register")
@@ -82,13 +82,13 @@ class UserControllerTest {
         //GIVEN
         var userRequest = createAnyUserRequest();
 
-        mockRestServiceServer.expect(ExpectedCount.once(),
-                        requestTo(new URI("http://localhost:8080/users")))
-                .andExpect(method(HttpMethod.POST))
-                .andRespond(withStatus(HttpStatus.CONFLICT)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(asJson(new RuntimeException()))
-                );
+//        mockRestServiceServer.expect(ExpectedCount.once(),
+//                        requestTo(new URI("http://localhost:8080/users")))
+//                .andExpect(method(HttpMethod.POST))
+//                .andRespond(withStatus(HttpStatus.CONFLICT)
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .body(asJson(new RuntimeException()))
+//                );
 
         //WHEN-THEN
         mockMvc.perform(post("/users/register")
