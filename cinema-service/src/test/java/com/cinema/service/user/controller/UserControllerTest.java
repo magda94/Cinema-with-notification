@@ -37,69 +37,69 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext
 class UserControllerTest extends PostgresqlContainer {
 
-//    @Autowired
-//    private RestTemplate restTemplate;
+    @Autowired
+    private RestTemplate restTemplate;
 
-//    @Autowired
-//    private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-//    private MockRestServiceServer mockRestServiceServer;
+    private MockRestServiceServer mockRestServiceServer;
 
     @BeforeEach
     public void before() {
-//        mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
+        mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
     }
 
     @Test
     public void shouldRegisterUser() throws Exception {
         //GIVEN
-//        var userRequest = createAnyUserRequest();
+        var userRequest = createAnyUserRequest();
 
-//        mockRestServiceServer.expect(ExpectedCount.once(),
-//                        requestTo(new URI("http://localhost:8080/users")))
-//                .andExpect(method(HttpMethod.POST))
-//                .andRespond(withStatus(HttpStatus.CREATED)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .body(asJson(userRequest))
-//                );
+        mockRestServiceServer.expect(ExpectedCount.once(),
+                        requestTo(new URI("http://localhost:8080/users")))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.CREATED)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(asJson(userRequest))
+                );
 
         //WHEN
-//        var result = mockMvc.perform(post("/users/register")
-//                .accept(MediaType.APPLICATION_JSON)
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .content(asJson(userRequest)))
-//                .andExpect(status().isOk())
-//                .andReturn();
+        var result = mockMvc.perform(post("/users/register")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJson(userRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
 
         //THEN
-//        var exceptedResponse = UserResponse.builder()
-//                .login(userRequest.getLogin())
-//                .build();
+        var exceptedResponse = UserResponse.builder()
+                .login(userRequest.getLogin())
+                .build();
 
-//        assertThat(result.getResponse().getContentAsString())
-//                .isEqualTo(asJson(exceptedResponse));
+        assertThat(result.getResponse().getContentAsString())
+                .isEqualTo(asJson(exceptedResponse));
     }
 
     @Test
     public void shouldNotRegisterUser() throws Exception {
         //GIVEN
-//        var userRequest = createAnyUserRequest();
+        var userRequest = createAnyUserRequest();
 
-//        mockRestServiceServer.expect(ExpectedCount.once(),
-//                        requestTo(new URI("http://localhost:8080/users")))
-//                .andExpect(method(HttpMethod.POST))
-//                .andRespond(withStatus(HttpStatus.CONFLICT)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .body(asJson(new RuntimeException()))
-//                );
+        mockRestServiceServer.expect(ExpectedCount.once(),
+                        requestTo(new URI("http://localhost:8080/users")))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withStatus(HttpStatus.CONFLICT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(asJson(new RuntimeException()))
+                );
 
         //WHEN-THEN
-//        mockMvc.perform(post("/users/register")
-//                        .accept(MediaType.APPLICATION_JSON)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(asJson(userRequest)))
-//                .andExpect(status().isForbidden())
-//                .andReturn();
+        mockMvc.perform(post("/users/register")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(userRequest)))
+                .andExpect(status().isForbidden())
+                .andReturn();
     }
 
     private UserRequest createAnyUserRequest() {
