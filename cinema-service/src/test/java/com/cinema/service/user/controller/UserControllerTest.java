@@ -44,7 +44,7 @@ class UserControllerTest {
 
     @BeforeEach
     public void before() {
-        mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
+//        mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
     }
 
     @Test
@@ -87,7 +87,7 @@ class UserControllerTest {
                 .andExpect(method(HttpMethod.POST))
                 .andRespond(withStatus(HttpStatus.CONFLICT)
                         .contentType(MediaType.APPLICATION_JSON)
-//                        .body(asJson(new RuntimeException()))
+                        .body(asJson(new RuntimeException()))
                 );
 
         //WHEN-THEN
