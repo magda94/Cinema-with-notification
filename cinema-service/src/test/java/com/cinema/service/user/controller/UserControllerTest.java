@@ -1,6 +1,7 @@
 package com.cinema.service.user.controller;
 
 import autofixture.publicinterface.Any;
+import com.cinema.service.container.PostgresqlContainer;
 import com.cinema.service.user.dto.UserRequest;
 import com.cinema.service.user.dto.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -32,7 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class UserControllerTest {
+@DirtiesContext
+class UserControllerTest extends PostgresqlContainer {
 
 //    @Autowired
 //    private RestTemplate restTemplate;
