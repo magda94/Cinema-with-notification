@@ -38,4 +38,9 @@ public class ExceptionsHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<String> handleShowExistException(ShowExistsException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(UserConnectionException.class)
+    public ResponseEntity<String> handleUserConnectionException(UserConnectionException ex) {
+        return new ResponseEntity<>(ex.getMessage(), ex.getHttpStatus());
+    }
 }
