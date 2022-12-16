@@ -29,6 +29,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.temporal.ChronoUnit;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -145,7 +147,7 @@ class ShowControllerTest extends PostgresqlContainer {
     }
 
     @Test
-    public void shouldNotAddShowWhenGilmNotExist() throws Exception {
+    public void shouldNotAddShowWhenFilmNotExist() throws Exception {
         //GIVEN
         var room = RoomEntityUtils.createRoomEntity();
         roomRepository.save(room);
@@ -170,6 +172,38 @@ class ShowControllerTest extends PostgresqlContainer {
         //THEN
         assertThat(showRepository.existsByShowId(newShow.getShowId())).isFalse();
         assertThat(ticketRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    public void shouldNotAddShowWhenSlotIsBusy() throws Exception {
+        //GIVEN
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntity(1, room);
+        showRepository.save(show);
+
+        var newShow = ShowDtoUtils.createShowDtoWithSlot(room, show.getStartDate().plus(10, ChronoUnit.MINUTES));
+
+        var film = FilmDtoUtils.createFilmDtoWithId(newShow.getFilmId());
+
+        mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/films/" + film.getCinemaFilmId()))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .withBody(asJson(film)))
+        );
+
+        //WHEN
+        mockMvc.perform(post("/shows")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJson(newShow)))
+                .andExpect(status().isConflict());
+
+        //THEN
+        assertThat(showRepository.count()).isEqualTo(1);
+
     }
 
     @Test

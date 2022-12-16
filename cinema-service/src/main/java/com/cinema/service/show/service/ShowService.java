@@ -78,23 +78,7 @@ public class ShowService {
 
         var savedShow = showRepository.save(newShow);
 
-        for (int row = 1; row <= room.getRowsNumber(); row++) {
-            for (int col = 1; col <= room.getColumnsNumber(); col++) {
-                var newTicket = TicketEntity.builder()
-                        .uuid(UUID.randomUUID())
-                        .filmId(requestShowDto.getFilmId())
-                        .show(savedShow)
-                        .status(TicketStatus.FREE)
-                        .place(Place.builder()
-                                .roomId(room.getRoomId())
-                                .rowNumber(row)
-                                .columnNumber(col)
-                                .build())
-                        .build();
-
-                ticketRepository.save(newTicket);
-            }
-        }
+        createAndSaveTicketsForShow(savedShow, room);
 
         return savedShow.toResponseShowDto();
 
@@ -115,5 +99,25 @@ public class ShowService {
                 .endDate(requestShowDto.getStartDate().plus(filmDto.getDuration() + BUFFER_MINUTES, ChronoUnit.MINUTES))
                 .room(room)
                 .build();
+    }
+
+    private void createAndSaveTicketsForShow(ShowEntity show, RoomEntity room) {
+        for (int row = 1; row <= room.getRowsNumber(); row++) {
+            for (int col = 1; col <= room.getColumnsNumber(); col++) {
+                var newTicket = TicketEntity.builder()
+                        .uuid(UUID.randomUUID())
+                        .filmId(show.getFilmId())
+                        .show(show)
+                        .status(TicketStatus.FREE)
+                        .place(Place.builder()
+                                .roomId(room.getRoomId())
+                                .rowNumber(row)
+                                .columnNumber(col)
+                                .build())
+                        .build();
+
+                ticketRepository.save(newTicket);
+            }
+        }
     }
 }
