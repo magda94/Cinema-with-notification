@@ -79,6 +79,7 @@ public class RoomService {
         return ShowInfo.builder()
                 .showId(show.getShowId())
                 .startDate(show.getStartDate())
+                .endDate(show.getEndDate())
                 .filmId(room.getRoomId())
                 .tickets(tickets)
                 .totalReservedNumber((int) reservedNumber)

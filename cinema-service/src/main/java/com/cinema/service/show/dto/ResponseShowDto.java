@@ -9,9 +9,9 @@ import java.time.Instant;
 
 @Builder
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class ShowDto {
+@NoArgsConstructor
+public class ResponseShowDto {
 
     private int showId;
 
@@ -20,4 +20,6 @@ public class ShowDto {
     private int roomId;
 
     private Instant startDate;
+
+    private Instant endDate;
 }
