@@ -18,3 +18,4 @@ com:
   cinema:
     service:
       user: user-service:8080
+      film: film-service:8081

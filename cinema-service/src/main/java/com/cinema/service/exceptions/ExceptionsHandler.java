@@ -43,4 +43,9 @@ public class ExceptionsHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<String> handleUserConnectionException(UserConnectionException ex) {
         return new ResponseEntity<>(ex.getMessage(), ex.getHttpStatus());
     }
+
+    @ExceptionHandler(FilmConnectionException.class)
+    public ResponseEntity<String> handleFilmConnectionException(FilmConnectionException ex) {
+        return new ResponseEntity<>(ex.getMessage(), ex.getHttpStatus());
+    }
 }

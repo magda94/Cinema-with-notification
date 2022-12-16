@@ -17,3 +17,4 @@ com:
   cinema:
     service:
       user: localhost:8080
+      film: localhost:8081
