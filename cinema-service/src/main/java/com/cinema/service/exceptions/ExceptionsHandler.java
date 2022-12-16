@@ -39,6 +39,11 @@ public class ExceptionsHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(ShowCollisionException.class)
+    public ResponseEntity<String> handleShowCollisionException(ShowCollisionException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(UserConnectionException.class)
     public ResponseEntity<String> handleUserConnectionException(UserConnectionException ex) {
         return new ResponseEntity<>(ex.getMessage(), ex.getHttpStatus());

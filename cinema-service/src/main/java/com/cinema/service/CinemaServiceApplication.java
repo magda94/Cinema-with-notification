@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 @EnableAutoConfiguration
 @EnableFeignClients
+@EnableJpaRepositories
 public class CinemaServiceApplication {
 
     public static void main(String[] args) {

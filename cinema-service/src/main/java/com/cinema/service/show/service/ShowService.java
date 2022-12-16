@@ -1,10 +1,14 @@
 package com.cinema.service.show.service;
 
+import com.cinema.service.exceptions.ShowCollisionException;
 import com.cinema.service.exceptions.ShowExistsException;
 import com.cinema.service.exceptions.ShowNotFoundException;
+import com.cinema.service.film.client.FilmServiceClient;
+import com.cinema.service.film.dto.FilmDto;
 import com.cinema.service.room.entity.RoomEntity;
 import com.cinema.service.room.repository.RoomRepository;
-import com.cinema.service.show.dto.ShowDto;
+import com.cinema.service.show.dto.RequestShowDto;
+import com.cinema.service.show.dto.ResponseShowDto;
 import com.cinema.service.show.entity.ShowEntity;
 import com.cinema.service.show.repository.ShowRepository;
 import com.cinema.service.ticket.TicketStatus;
@@ -15,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,46 +30,84 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ShowService {
 
+    private final static int BUFFER_MINUTES = 15;
+
     private final ShowRepository showRepository;
     private final RoomRepository roomRepository;
     private final TicketRepository ticketRepository;
 
-    public List<ShowDto> getAllShows() {
+    private final FilmServiceClient filmServiceClient;
+
+    public List<ResponseShowDto> getAllShows() {
         return showRepository.findAll()
                 .stream()
-                .map(ShowEntity::toShowDto)
+                .map(ShowEntity::toResponseShowDto)
                 .collect(Collectors.toList());
     }
 
-    public ShowDto getShowWithId(int showId) {
+    public ResponseShowDto getShowWithId(int showId) {
         return showRepository.findByShowId(showId)
-                .map(ShowEntity::toShowDto)
+                .map(ShowEntity::toResponseShowDto)
                 .orElseThrow(() -> {
                     log.error("Cannot find show with id: {}", showId);
                     throw new ShowNotFoundException("Cannot find show with id: " + showId);
                 });
     }
 
-    public ShowDto addNewShow(ShowDto showDto) {
-        if (showRepository.existsByShowId(showDto.getShowId())) {
-            log.error("Cannot add new show. Show with id: '{}' exists in database", showDto.getShowId());
-            throw new ShowExistsException(String.format("Show with id: %d exists in database", showDto.getShowId()));
+    @Transactional
+    public ResponseShowDto addNewShow(RequestShowDto requestShowDto) {
+        if (showRepository.existsByShowId(requestShowDto.getShowId())) {
+            log.error("Cannot add new show. Show with id: '{}' exists in database", requestShowDto.getShowId());
+            throw new ShowExistsException(String.format("Show with id: %d exists in database", requestShowDto.getShowId()));
         }
 
-        var room = roomRepository.findByRoomId(showDto.getRoomId())
+        var room = roomRepository.findByRoomId(requestShowDto.getRoomId())
                 .orElseThrow(() -> {
-                    log.error("Cannot find room with id: {}", showDto.getRoomId());
-                    throw new ShowNotFoundException("Cannot find room with id: " + showDto.getRoomId());
+                    log.error("Cannot find room with id: {}", requestShowDto.getRoomId());
+                    throw new ShowNotFoundException("Cannot find room with id: " + requestShowDto.getRoomId());
                 });
 
-        var savedShow = showRepository.save(toEntity(showDto, room));
+        var film = filmServiceClient.getFilmWithId(requestShowDto.getFilmId());
 
+        var newShow = toEntity(requestShowDto, room, film);
+
+        if (showRepository.findOtherShow(room.getRoomId(), newShow.getStartDate(), newShow.getEndDate()).size() != 0) {
+            log.error("Cannot add show with id: {}. Timeslot is occupied.", newShow.getShowId());
+            throw new ShowCollisionException("Timeslot is occupied");
+        }
+
+        var savedShow = showRepository.save(newShow);
+
+        createAndSaveTicketsForShow(savedShow, room);
+
+        return savedShow.toResponseShowDto();
+
+    }
+
+    public void deleteShowWithId(int showId) {
+        showRepository.findByShowId(showId)
+                        .ifPresent(ticketRepository::deleteAllByShow);
+
+        showRepository.deleteByShowId(showId);
+    }
+
+    private ShowEntity toEntity(RequestShowDto requestShowDto, RoomEntity room, FilmDto filmDto) {
+        return ShowEntity.builder()
+                .showId(requestShowDto.getShowId())
+                .filmId(requestShowDto.getFilmId())
+                .startDate(requestShowDto.getStartDate())
+                .endDate(requestShowDto.getStartDate().plus(filmDto.getDuration() + BUFFER_MINUTES, ChronoUnit.MINUTES))
+                .room(room)
+                .build();
+    }
+
+    private void createAndSaveTicketsForShow(ShowEntity show, RoomEntity room) {
         for (int row = 1; row <= room.getRowsNumber(); row++) {
             for (int col = 1; col <= room.getColumnsNumber(); col++) {
                 var newTicket = TicketEntity.builder()
                         .uuid(UUID.randomUUID())
-                        .filmId(showDto.getFilmId())
-                        .show(savedShow)
+                        .filmId(show.getFilmId())
+                        .show(show)
                         .status(TicketStatus.FREE)
                         .place(Place.builder()
                                 .roomId(room.getRoomId())
@@ -75,26 +119,5 @@ public class ShowService {
                 ticketRepository.save(newTicket);
             }
         }
-
-        //TODO: add checking filmId in the future
-
-        return savedShow.toShowDto();
-
-    }
-
-    public void deleteShowWithId(int showId) {
-        showRepository.findByShowId(showId)
-                        .ifPresent(ticketRepository::deleteAllByShow);
-
-        showRepository.deleteByShowId(showId);
-    }
-
-    private ShowEntity toEntity(ShowDto showDto, RoomEntity room) {
-        return ShowEntity.builder()
-                .showId(showDto.getShowId())
-                .filmId(showDto.getFilmId())
-                .startDate(showDto.getStartDate())
-                .room(room)
-                .build();
     }
 }
