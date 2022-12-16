@@ -17,7 +17,7 @@ public class FilmController {
 
     @PostMapping("")
     public ResponseEntity addFilm(@RequestBody FilmDto filmDto) {
-        log.info("POST");
+        log.info("Add film with id: '{}' request", filmDto.getCinemaFilmId());
         return ResponseEntity.ok(filmServiceClient.addNewFilm(filmDto));
     }
 }
