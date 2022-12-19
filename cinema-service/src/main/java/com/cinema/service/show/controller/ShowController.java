@@ -34,6 +34,12 @@ public class ShowController {
         return ResponseEntity.ok(showService.getShowWithId(showId));
     }
 
+    @GetMapping("/reservations/{showId}")
+    public ResponseEntity<List<ReservationResponse>> getReservationForShow(@PathVariable("showId") int showId) {
+        log.info("Get all reservations for show with id: '{}'", showId);
+        return ResponseEntity.ok(showService.getReservationsForShow(showId));
+    }
+
     @PostMapping("")
     public ResponseEntity<ResponseShowDto> addShow(@RequestBody @Valid RequestShowDto requestShowDto) {
         log.info("Add new show with id : '{}' request", requestShowDto.getShowId());

@@ -57,6 +57,18 @@ public class ShowService {
                 });
     }
 
+    public List<ReservationResponse> getReservationsForShow(int showId) {
+        if (!showRepository.existsByShowId(showId)) {
+                    log.error("Cannot find show with id: {}", showId);
+                    throw new ShowNotFoundException("Cannot find show with id: " + showId);
+        }
+
+        return reservationRepository.findAllActualByShowId(showId)
+                .stream()
+                .map(this::toReservationResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public ResponseShowDto addNewShow(RequestShowDto requestShowDto) {
         if (showRepository.existsByShowId(requestShowDto.getShowId())) {
@@ -134,9 +146,10 @@ public class ShowService {
         }
 
         var reservation = ReservationEntity.builder()
-                .ticketid(ticket.getUuid())
+                .ticketId(ticket.getUuid())
                 .status(toReservationStatus(request.getStatus()))
                 .userLogin(request.getUserLogin())
+                .showId(request.getShowId())
                 .build();
 
         reservationRepository.save(reservation);
@@ -153,6 +166,7 @@ public class ShowService {
                 .reservationId(reservation.getUuid())
                 .place(ticket.getPlace())
                 .reservationStatus(reservation.getStatus())
+                .showId(reservation.getShowId())
                 .build();
 
     }
@@ -192,5 +206,22 @@ public class ShowService {
             case RESERVED -> ReservationStatus.RESERVED;
             case PAID -> ReservationStatus.PAID;
         };
+    }
+
+    private ReservationResponse toReservationResponse(ReservationEntity entity) {
+        var ticket = ticketRepository.findByUuid(entity.getTicketId())
+                .orElseThrow(() -> {
+                    log.error("Cannot find ticket with id: {}", entity.getTicketId());
+                    throw new TicketNotFoundException("Cannot find ticket with id: " + entity.getTicketId());
+                });
+
+        return ReservationResponse.builder()
+                .reservationId(entity.getUuid())
+                .reservationStatus(entity.getStatus())
+                .ticketId(entity.getTicketId())
+                .place(ticket.getPlace())
+                .userLogin(entity.getUserLogin())
+                .showId(entity.getShowId())
+                .build();
     }
 }

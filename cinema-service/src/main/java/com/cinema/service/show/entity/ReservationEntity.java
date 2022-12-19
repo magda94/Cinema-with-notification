@@ -21,9 +21,12 @@ public class ReservationEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID uuid;
 
-    private UUID ticketid;
+    private UUID ticketId;
+
+    private int showId;
 
     private String userLogin;
 
+    @Enumerated(EnumType.STRING)
     private ReservationStatus status;
 }

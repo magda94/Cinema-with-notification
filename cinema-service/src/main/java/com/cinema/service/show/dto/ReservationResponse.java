@@ -20,6 +20,8 @@ public class ReservationResponse {
 
     private String userLogin;
 
+    private int showId;
+
     private UUID ticketId;
 
     private Place place;
