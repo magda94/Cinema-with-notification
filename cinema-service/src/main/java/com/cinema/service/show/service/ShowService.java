@@ -1,20 +1,18 @@
 package com.cinema.service.show.service;
 
-import com.cinema.service.exceptions.ShowCollisionException;
-import com.cinema.service.exceptions.ShowExistsException;
-import com.cinema.service.exceptions.ShowNotFoundException;
+import com.cinema.service.exceptions.*;
 import com.cinema.service.film.client.FilmServiceClient;
 import com.cinema.service.film.dto.FilmDto;
 import com.cinema.service.room.entity.RoomEntity;
 import com.cinema.service.room.repository.RoomRepository;
-import com.cinema.service.show.dto.RequestShowDto;
-import com.cinema.service.show.dto.ResponseShowDto;
+import com.cinema.service.show.dto.*;
 import com.cinema.service.show.entity.ShowEntity;
 import com.cinema.service.show.repository.ShowRepository;
 import com.cinema.service.ticket.TicketStatus;
 import com.cinema.service.ticket.entity.Place;
 import com.cinema.service.ticket.entity.TicketEntity;
 import com.cinema.service.ticket.repository.TicketRepository;
+import com.cinema.service.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,6 +35,8 @@ public class ShowService {
     private final TicketRepository ticketRepository;
 
     private final FilmServiceClient filmServiceClient;
+
+    private final UserService userService;
 
     public List<ResponseShowDto> getAllShows() {
         return showRepository.findAll()
