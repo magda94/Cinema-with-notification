@@ -9,6 +9,9 @@ import com.cinema.service.room.utils.RoomEntityUtils;
 import com.cinema.service.show.repository.ShowRepository;
 import com.cinema.service.show.utils.ShowDtoUtils;
 import com.cinema.service.show.utils.ShowEntityUtils;
+import com.cinema.service.ticket.TicketStatus;
+import com.cinema.service.ticket.entity.Place;
+import com.cinema.service.ticket.entity.TicketEntity;
 import com.cinema.service.ticket.repository.TicketRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +33,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -261,6 +265,49 @@ class ShowControllerTest extends PostgresqlContainer {
         //THEN
         assertThat(showRepository.count()).isEqualTo(0);
         assertThat(roomRepository.count()).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldCancelShow() throws Exception {
+        //GIVEN
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show = ShowEntityUtils.createShowEntityWithRoom(room);
+
+        showRepository.save(show);
+
+        var ticket = TicketEntity.builder()
+                .uuid(UUID.randomUUID())
+                .filmId(show.getFilmId())
+                .status(TicketStatus.FREE)
+                .show(show)
+                .id(Any.longValue())
+                .place(Place.builder()
+                        .roomId(room.getRoomId())
+                        .rowNumber(Any.intValue())
+                        .columnNumber(Any.intValue())
+                        .build())
+                .build();
+
+        ticketRepository.save(ticket);
+
+        //WHEN
+        mockMvc.perform(post("/shows/cancel/" + show.getShowId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        //THEN
+        assertThat(showRepository.count()).isEqualTo(0);
+        assertThat(ticketRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    public void shouldNotCancelShowWhenNotExist() throws Exception {
+        //WHEN-THEN
+        mockMvc.perform(post("/shows/cancel/" + Any.intValue()))
+                .andExpect(status().isNotFound());
     }
 
     private String asJson(Object object) throws JsonProcessingException {

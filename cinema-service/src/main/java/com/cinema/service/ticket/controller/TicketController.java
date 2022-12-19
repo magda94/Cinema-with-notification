@@ -38,6 +38,12 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getTicketsForFilm(filmId));
     }
 
+    @GetMapping("/show/{showId}")
+    public ResponseEntity<List<TicketDto>> getTicketsForShow(@PathVariable("showId") int showId) {
+        log.info("Get all tickets for show with id: '{}' requests", showId);
+        return ResponseEntity.ok(ticketService.getTicketsForShow(showId));
+    }
+
     @PostMapping("")
     public ResponseEntity<TicketDto> addTicket(@RequestBody @Valid TicketDto ticketDto) {
         log.info("Add ticket with id: '{}' request", ticketDto.getUuid());
