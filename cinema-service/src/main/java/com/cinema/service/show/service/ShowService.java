@@ -81,7 +81,20 @@ public class ShowService {
         createAndSaveTicketsForShow(savedShow, room);
 
         return savedShow.toResponseShowDto();
+    }
 
+    @Transactional
+    public void cancelShow(int showId) {
+        var show = showRepository.findByShowId(showId)
+                .orElseThrow(() -> {
+                    log.error("Cannot find show with id: {}", showId);
+                    throw new ShowNotFoundException("Cannot find show with id: " + showId);
+                });
+
+        log.info("Delete tickets for show with id: '{}'", showId);
+        ticketRepository.deleteAllByShow(show);
+
+        showRepository.deleteByShowId(showId);
     }
 
     public void deleteShowWithId(int showId) {

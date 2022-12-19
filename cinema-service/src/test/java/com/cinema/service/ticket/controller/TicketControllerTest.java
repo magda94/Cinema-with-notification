@@ -148,6 +148,32 @@ class TicketControllerTest extends PostgresqlContainer {
     }
 
     @Test
+    public void shouldReturnTicketsForShow() throws Exception {
+        //GIVEN
+        var room = RoomEntityUtils.createRoomEntity();
+        roomRepository.save(room);
+
+        var show1 = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+
+        var show2 = ShowEntityUtils.createShowEntity(Any.intValue(), room);
+        showRepository.saveAll(List.of(show1, show2));
+
+        var ticket1 = TicketEntityUtils.createTicketEntityWithFilmId(1, show1);
+        var ticket2 = TicketEntityUtils.createTicketEntityWithFilmId(2, show2);
+        var ticket3 = TicketEntityUtils.createTicketEntityWithFilmId(1, show1);
+
+        ticketRepository.saveAll(List.of(ticket1, ticket2, ticket3));
+
+        //WHEN-THEN
+        mockMvc.perform(get("/tickets/show/" + ticket1.getShow().getShowId())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].uuid", equalTo(ticket1.getUuid().toString())))
+                .andExpect(jsonPath("$[1].uuid", equalTo(ticket3.getUuid().toString())));
+    }
+
+    @Test
     public void shouldAddTicket() throws Exception {
         //GIVEN
         var room = RoomEntityUtils.createRoomEntity();

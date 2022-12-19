@@ -48,6 +48,19 @@ public class TicketService {
                 .collect(Collectors.toList());
     }
 
+    public List<TicketDto> getTicketsForShow(int showId) {
+        var show = showRepository.findByShowId(showId)
+                .orElseThrow(() -> {
+                    log.error("Cannot fins show with id: {}", showId);
+                    throw new ShowNotFoundException("Cannot find show with id: " + showId);
+                });
+
+        return ticketRepository.findAllByShow(show)
+                .stream()
+                .map(TicketEntity::toTicketDto)
+                .collect(Collectors.toList());
+    }
+
     public TicketDto addTicket(TicketDto ticketDto) {
         if (ticketRepository.existsByUuid(ticketDto.getUuid())) {
             log.error("Cannot add ticket. Ticket with uuid: {} exists in database", ticketDto.getUuid());

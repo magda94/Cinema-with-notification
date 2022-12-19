@@ -39,6 +39,13 @@ public class ShowController {
                 .body(showService.addNewShow(requestShowDto));
     }
 
+    @PostMapping("/cancel/{showId}")
+    public ResponseEntity cancelShow(@PathVariable("showId") int showId) {
+        log.info("Cancel show with id: '{}' repquest", showId);
+        showService.cancelShow(showId);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/{showId}")
     public void deleteShowWithId(@PathVariable("showId") int showId) {
         log.info("Delete show with id: '{}' request", showId);
