@@ -1,9 +1,6 @@
 package com.cinema.service.show.controller;
 
-import com.cinema.service.show.dto.RequestShowDto;
-import com.cinema.service.show.dto.ReservationRequest;
-import com.cinema.service.show.dto.ReservationResponse;
-import com.cinema.service.show.dto.ResponseShowDto;
+import com.cinema.service.show.dto.*;
 import com.cinema.service.show.service.ShowService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/shows")
@@ -61,8 +59,11 @@ public class ShowController {
         return ResponseEntity.accepted().body(showService.reserveTicketForShow(reservationRequest));
     }
 
-    //TODO cancel reservation
-//    @PostMapping("/reservation/cancel/{reservationId}")
+    @PostMapping("/reservation/cancel/{reservationId}")
+    public ResponseEntity<CancelReservationResponse> cancelReservation(@PathVariable("reservationId")UUID reservationId) {
+        log.info("Cancel reservation with id: '{}' request", reservationId);
+        return ResponseEntity.accepted().body(showService.cancelReservation(reservationId));
+    }
 
     @DeleteMapping("/{showId}")
     public void deleteShowWithId(@PathVariable("showId") int showId) {

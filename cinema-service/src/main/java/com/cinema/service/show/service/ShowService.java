@@ -119,6 +119,7 @@ public class ShowService {
         showRepository.deleteByShowId(showId);
     }
 
+    @Transactional
     public ReservationResponse reserveTicketForShow(ReservationRequest request) {
         var show = showRepository.findByShowId(request.getShowId())
                 .orElseThrow(() -> {
@@ -168,7 +169,35 @@ public class ShowService {
                 .reservationStatus(reservation.getStatus())
                 .showId(reservation.getShowId())
                 .build();
+    }
 
+    @Transactional
+    public CancelReservationResponse cancelReservation(UUID reservationId) {
+        var reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> {
+                    log.error("Cannot find reservation with id: {}", reservationId);
+                    throw new TicketNotFoundException("Cannot find reservation with id: " + reservationId);
+                });
+
+        var ticket = ticketRepository.findByUuid(reservation.getTicketId())
+                .orElseThrow(() -> {
+                    log.error("Cannot find ticket with id: {}", reservation.getTicketId());
+                    throw new TicketNotFoundException("Cannot find ticket with id: " + reservation.getTicketId());
+                });
+
+        ticket.setUserLogin(null);
+        ticket.setStatus(TicketStatus.FREE);
+
+        log.info("Free ticket with id: '{}", ticket.getUuid());
+        ticketRepository.save(ticket);
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+
+        reservationRepository.save(reservation);
+
+        return CancelReservationResponse.builder()
+                .reservationId(reservation.getUuid())
+                .build();
     }
 
     private ShowEntity toEntity(RequestShowDto requestShowDto, RoomEntity room, FilmDto filmDto) {
