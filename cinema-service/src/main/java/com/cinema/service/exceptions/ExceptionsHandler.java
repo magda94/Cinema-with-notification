@@ -44,6 +44,16 @@ public class ExceptionsHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
 
+    @ExceptionHandler(TicketReservedException.class)
+    public ResponseEntity<String> handleTicketReservedException(TicketReservedException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(TicketMismatchException.class)
+    public ResponseEntity<String> handleTicketMismatchException(TicketMismatchException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(UserConnectionException.class)
     public ResponseEntity<String> handleUserConnectionException(UserConnectionException ex) {
         return new ResponseEntity<>(ex.getMessage(), ex.getHttpStatus());

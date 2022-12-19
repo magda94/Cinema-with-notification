@@ -1,6 +1,8 @@
 package com.cinema.service.show.controller;
 
 import com.cinema.service.show.dto.RequestShowDto;
+import com.cinema.service.show.dto.ReservationRequest;
+import com.cinema.service.show.dto.ReservationResponse;
 import com.cinema.service.show.dto.ResponseShowDto;
 import com.cinema.service.show.service.ShowService;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,16 @@ public class ShowController {
         showService.cancelShow(showId);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/reservation")
+    public ResponseEntity<ReservationResponse> reserveTicketForShow(@RequestBody @Valid ReservationRequest reservationRequest) {
+        log.info("Reserve ticket id : '{}' for show: '{}' and user : '{}' request",
+                reservationRequest.getTicketId(), reservationRequest.getShowId(), reservationRequest.getUserLogin());
+        return ResponseEntity.accepted().body(showService.reserveTicketForShow(reservationRequest));
+    }
+
+    //TODO cancel reservation
+//    @PostMapping("/reservation/cancel/{reservationId}")
 
     @DeleteMapping("/{showId}")
     public void deleteShowWithId(@PathVariable("showId") int showId) {

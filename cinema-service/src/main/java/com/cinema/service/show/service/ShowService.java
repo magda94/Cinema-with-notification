@@ -1,20 +1,20 @@
 package com.cinema.service.show.service;
 
-import com.cinema.service.exceptions.ShowCollisionException;
-import com.cinema.service.exceptions.ShowExistsException;
-import com.cinema.service.exceptions.ShowNotFoundException;
+import com.cinema.service.exceptions.*;
 import com.cinema.service.film.client.FilmServiceClient;
 import com.cinema.service.film.dto.FilmDto;
 import com.cinema.service.room.entity.RoomEntity;
 import com.cinema.service.room.repository.RoomRepository;
-import com.cinema.service.show.dto.RequestShowDto;
-import com.cinema.service.show.dto.ResponseShowDto;
+import com.cinema.service.show.dto.*;
+import com.cinema.service.show.entity.ReservationEntity;
 import com.cinema.service.show.entity.ShowEntity;
+import com.cinema.service.show.repository.ReservationRepository;
 import com.cinema.service.show.repository.ShowRepository;
 import com.cinema.service.ticket.TicketStatus;
 import com.cinema.service.ticket.entity.Place;
 import com.cinema.service.ticket.entity.TicketEntity;
 import com.cinema.service.ticket.repository.TicketRepository;
+import com.cinema.service.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,8 +35,11 @@ public class ShowService {
     private final ShowRepository showRepository;
     private final RoomRepository roomRepository;
     private final TicketRepository ticketRepository;
+    private final ReservationRepository reservationRepository;
 
     private final FilmServiceClient filmServiceClient;
+
+    private final UserService userService;
 
     public List<ResponseShowDto> getAllShows() {
         return showRepository.findAll()
@@ -104,6 +107,56 @@ public class ShowService {
         showRepository.deleteByShowId(showId);
     }
 
+    public ReservationResponse reserveTicketForShow(ReservationRequest request) {
+        var show = showRepository.findByShowId(request.getShowId())
+                .orElseThrow(() -> {
+                    log.error("Cannot find show with id: {}", request.getShowId());
+                    throw new ShowNotFoundException("Cannot find show with id: " + request.getShowId());
+                });
+
+        //TODO: check if user exist
+
+        var ticket = ticketRepository.findByUuid(request.getTicketId())
+                .orElseThrow(() -> {
+                    log.error("Cannot find ticket with id: {}", request.getTicketId());
+                    throw new TicketNotFoundException("Cannot find ticket with id: " + request.getTicketId());
+                });
+
+        if (!ticket.getShow().equals(show)) {
+            log.info("Ticket with id: '{}' doesn't match to show with id: '{}'", ticket.getUuid(), show.getShowId());
+            throw new TicketMismatchException(String.format("Ticket with id: '%s' mismatch to show: '%d'",
+                    ticket.getUuid(), show.getShowId()));
+        }
+
+        if (ticket.getStatus() != TicketStatus.FREE) {
+            log.info("Ticket with id: '{}' has already reserved");
+            throw new TicketReservedException(String.format("Ticket with id '%s' has already reserved", ticket.getUuid()));
+        }
+
+        var reservation = ReservationEntity.builder()
+                .ticketid(ticket.getUuid())
+                .status(toReservationStatus(request.getStatus()))
+                .userLogin(request.getUserLogin())
+                .build();
+
+        reservationRepository.save(reservation);
+
+        ticket.setStatus(request.getStatus() == RequestReservationStatus.RESERVED ?
+                TicketStatus.RESERVED : TicketStatus.PAID);
+        ticket.setUserLogin(request.getUserLogin());
+
+        ticketRepository.save(ticket);
+
+        return ReservationResponse.builder()
+                .ticketId(ticket.getUuid())
+                .userLogin(request.getUserLogin())
+                .reservationId(reservation.getUuid())
+                .place(ticket.getPlace())
+                .reservationStatus(reservation.getStatus())
+                .build();
+
+    }
+
     private ShowEntity toEntity(RequestShowDto requestShowDto, RoomEntity room, FilmDto filmDto) {
         return ShowEntity.builder()
                 .showId(requestShowDto.getShowId())
@@ -132,5 +185,12 @@ public class ShowService {
                 ticketRepository.save(newTicket);
             }
         }
+    }
+
+    private ReservationStatus toReservationStatus(RequestReservationStatus reservationStatus) {
+        return switch (reservationStatus) {
+            case RESERVED -> ReservationStatus.RESERVED;
+            case PAID -> ReservationStatus.PAID;
+        };
     }
 }
