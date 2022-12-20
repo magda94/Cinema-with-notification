@@ -96,6 +96,29 @@ services:
       - film-mongodb
     restart: unless-stopped
 
+  # zookeeper
+  zookeeper-cinema:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper-cinema
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  # kafka
+  kafka-cinema:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-cinema
+    depends_on:
+      - zookeeper-cinema
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-cinema:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-cinema:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+
 networks:
   postgres-user:
     driver: bridge
