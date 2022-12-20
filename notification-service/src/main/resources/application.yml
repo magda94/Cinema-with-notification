@@ -3,12 +3,19 @@ server:
 spring:
   kafka:
     consumer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: localhost:29092
       group-id: notification
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
     producer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: localhost:29092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+com:
+  notification:
+    service:
+      kafka:
+        response:
+          topic: notification-response
