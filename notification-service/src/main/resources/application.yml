@@ -19,3 +19,5 @@ com:
       kafka:
         response:
           topic: notification-response
+        request:
+          topic: notification-request
