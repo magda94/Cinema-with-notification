@@ -22,8 +22,7 @@ public class CinemaProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendNotificationRequest(NotificationRequest request) {
-        log.info("TOPIC:{}", topic);
-        kafkaTemplate.send(topic, "haha");
+        kafkaTemplate.send(topic, request);
         log.info("Sent message: '{}'", request.toString());
     }
 
