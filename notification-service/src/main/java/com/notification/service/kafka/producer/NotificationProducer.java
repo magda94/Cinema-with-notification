@@ -26,7 +26,7 @@ public class NotificationProducer {
         log.info("Sent message: '{}'", notificationResponse.toString());
     }
 
-//    @Scheduled(fixedRate = 10_000L)
+    @Scheduled(fixedRate = 10_000L)
     public void sentSchedule() {
         log.info("Starting sending message ...");
         var response = NotificationResponse.builder()
