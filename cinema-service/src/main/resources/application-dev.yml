@@ -32,3 +32,8 @@ com:
     service:
       user: user-service:8080
       film: film-service:8081
+      kafka:
+        request:
+          topic: notification-request
+        response:
+          topic: notification-response
