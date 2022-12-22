@@ -4,6 +4,7 @@ import autofixture.publicinterface.Any;
 import com.cinema.service.WireMockConfig;
 import com.cinema.service.container.PostgresqlContainer;
 import com.cinema.service.film.controller.utils.FilmDtoUtils;
+import com.cinema.service.kafka.producer.DevCinemaProducer;
 import com.cinema.service.room.repository.RoomRepository;
 import com.cinema.service.room.utils.RoomEntityUtils;
 import com.cinema.service.show.dto.RequestReservationStatus;
@@ -34,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -55,6 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DirtiesContext
 @ContextConfiguration(classes = { WireMockConfig.class })
+@ActiveProfiles("test")
 class ShowControllerTest extends PostgresqlContainer {
 
     @Autowired
@@ -74,6 +77,8 @@ class ShowControllerTest extends PostgresqlContainer {
 
     @Autowired
     private WireMockServer mockServer;
+
+    private DevCinemaProducer cinemaProducer;
 
     @BeforeEach
     public void before() {

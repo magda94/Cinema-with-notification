@@ -10,7 +10,6 @@ import com.cinema.service.kafka.dto.NotificationRequest;
 import com.cinema.service.kafka.producer.CinemaProducer;
 import com.cinema.service.show.dto.*;
 import com.cinema.service.show.entity.ReservationEntity;
-import com.cinema.service.show.entity.ShowEntity;
 import com.cinema.service.show.repository.ReservationRepository;
 import com.cinema.service.show.repository.ShowRepository;
 import com.cinema.service.ticket.TicketStatus;
