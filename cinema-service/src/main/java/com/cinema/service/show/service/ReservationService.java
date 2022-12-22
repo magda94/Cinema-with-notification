@@ -4,11 +4,16 @@ import com.cinema.service.exceptions.ShowNotFoundException;
 import com.cinema.service.exceptions.TicketMismatchException;
 import com.cinema.service.exceptions.TicketNotFoundException;
 import com.cinema.service.exceptions.TicketReservedException;
+import com.cinema.service.film.client.FilmServiceClient;
+import com.cinema.service.kafka.dto.CancelNotificationRequest;
+import com.cinema.service.kafka.dto.NotificationRequest;
+import com.cinema.service.kafka.producer.CinemaProducer;
 import com.cinema.service.show.dto.*;
 import com.cinema.service.show.entity.ReservationEntity;
 import com.cinema.service.show.repository.ReservationRepository;
 import com.cinema.service.show.repository.ShowRepository;
 import com.cinema.service.ticket.TicketStatus;
+import com.cinema.service.ticket.entity.TicketEntity;
 import com.cinema.service.ticket.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +32,8 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final TicketRepository ticketRepository;
     private final ShowRepository showRepository;
+    private final FilmServiceClient filmServiceClient;
+    private final CinemaProducer cinemaProducer;
 
     public List<ReservationResponse> getReservationsForShow(int showId) {
         if (!showRepository.existsByShowId(showId)) {
@@ -82,6 +89,8 @@ public class ReservationService {
 
         ticketRepository.save(ticket);
 
+        sendNotification(ticket);
+
         return ReservationResponse.builder()
                 .ticketId(ticket.getUuid())
                 .userLogin(request.getUserLogin())
@@ -106,6 +115,7 @@ public class ReservationService {
                     throw new TicketNotFoundException("Cannot find ticket with id: " + reservation.getTicketId());
                 });
 
+        var user = ticket.getUserLogin();
         ticket.setUserLogin(null);
         ticket.setStatus(TicketStatus.FREE);
 
@@ -115,6 +125,8 @@ public class ReservationService {
         reservation.setStatus(ReservationStatus.CANCELLED);
 
         reservationRepository.save(reservation);
+
+        sendCancelNotification(user, ticket);
 
         return CancelReservationResponse.builder()
                 .reservationId(reservation.getUuid())
@@ -143,5 +155,30 @@ public class ReservationService {
                 .userLogin(entity.getUserLogin())
                 .showId(entity.getShowId())
                 .build();
+    }
+
+    private void sendNotification(TicketEntity ticket) {
+        var film = filmServiceClient.getFilmWithId(ticket.getFilmId());
+
+        var notificationRequest = NotificationRequest.builder()
+                .filmName(film.getName())
+                .user(ticket.getUserLogin())
+                .showTime(ticket.getShow().getStartDate())
+                .place(ticket.getPlace())
+                .build();
+
+        cinemaProducer.sendNotificationRequest(notificationRequest);
+    }
+
+    private void sendCancelNotification(String user, TicketEntity ticket) {
+        var film = filmServiceClient.getFilmWithId(ticket.getFilmId());
+
+        var notificationRequest = CancelNotificationRequest.builder()
+                .filmName(film.getName())
+                .user(user)
+                .showTime(ticket.getShow().getStartDate())
+                .build();
+
+        cinemaProducer.sendCancelNotificationRequest(notificationRequest);
     }
 }
