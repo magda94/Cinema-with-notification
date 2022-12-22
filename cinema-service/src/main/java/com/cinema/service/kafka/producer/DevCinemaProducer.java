@@ -7,7 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +27,36 @@ public class DevCinemaProducer implements CinemaProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendNotificationRequest(NotificationRequest request) {
-        kafkaTemplate.send(topic, request);
-        log.info("Sent message: '{}'", request.toString());
+        ListenableFuture<SendResult<String, Object>> future  = kafkaTemplate.send(topic, request);
+
+        future.addCallback(new ListenableFutureCallback<>() {
+            @Override
+            public void onSuccess(SendResult<String, Object> result) {
+                log.info("Sent message: " + request
+                        + " with offset: " + result.getRecordMetadata().offset());
+            }
+
+            @Override
+            public void onFailure(Throwable ex) {
+                log.error("Unable to send message : " + request, ex);
+            }
+        });
     }
 
     public void sendCancelNotificationRequest(CancelNotificationRequest request) {
-        kafkaTemplate.send(cancelTopic, request);
-        log.info("Sent message: '{}'", request.toString());
+        ListenableFuture<SendResult<String, Object>> future  = kafkaTemplate.send(cancelTopic, request);
+
+        future.addCallback(new ListenableFutureCallback<>() {
+            @Override
+            public void onSuccess(SendResult<String, Object> result) {
+                log.info("Sent message: " + request
+                        + " with offset: " + result.getRecordMetadata().offset());
+            }
+
+            @Override
+            public void onFailure(Throwable ex) {
+                log.error("Unable to send message : " + request, ex);
+            }
+        });
     }
 }
