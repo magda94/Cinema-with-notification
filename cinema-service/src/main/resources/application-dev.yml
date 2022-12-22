@@ -34,6 +34,9 @@ com:
       film: film-service:8081
       kafka:
         request:
-          topic: notification-request
+          reservation:
+            topic: notification-request
+          cancel:
+              topic: cancel-request
         response:
           topic: notification-response

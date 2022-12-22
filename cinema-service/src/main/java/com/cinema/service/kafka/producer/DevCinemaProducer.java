@@ -15,8 +15,11 @@ import org.springframework.stereotype.Service;
 @Profile("!test")
 public class DevCinemaProducer implements CinemaProducer {
 
-    @Value("${com.cinema.service.kafka.request.topic}")
+    @Value("${com.cinema.service.kafka.request.reservation.topic}")
     private String topic;
+
+    @Value("${com.cinema.service.kafka.request.cancel.topic}")
+    private String cancelTopic;
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
@@ -26,7 +29,7 @@ public class DevCinemaProducer implements CinemaProducer {
     }
 
     public void sendCancelNotificationRequest(CancelNotificationRequest request) {
-        kafkaTemplate.send(topic, request);
+        kafkaTemplate.send(cancelTopic, request);
         log.info("Sent message: '{}'", request.toString());
     }
 }
