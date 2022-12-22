@@ -24,4 +24,7 @@ com:
         response:
           topic: notification-response
         request:
-          topic: notification-request
+          reservation:
+            topic: notification-request
+          cancel:
+            topic: cancel-request

@@ -1,5 +1,6 @@
 package com.notification.service.kafka.consumer;
 
+import com.notification.service.kafka.dto.CancelNotificationRequest;
 import com.notification.service.kafka.dto.NotificationRequest;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -39,10 +40,27 @@ public class ConsumerConfiguration {
     }
 
     @Bean
+    public ConsumerFactory<String, CancelNotificationRequest> cancelConsumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+                consumerConfigs(),
+                new StringDeserializer(),
+                new JsonDeserializer<>(CancelNotificationRequest.class)
+        );
+    }
+
+    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, NotificationRequest> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, NotificationRequest> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, CancelNotificationRequest> kafkaCancelListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, CancelNotificationRequest> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(cancelConsumerFactory());
         return factory;
     }
 }
