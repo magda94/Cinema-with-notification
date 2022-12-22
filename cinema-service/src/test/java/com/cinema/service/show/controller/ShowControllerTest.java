@@ -379,6 +379,15 @@ class ShowControllerTest extends PostgresqlContainer {
                 .ticketId(ticket.getUuid())
                 .build();
 
+        var film = FilmDtoUtils.createFilmDtoWithId(show.getFilmId());
+
+        mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/films/" + ticket.getFilmId()))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .withBody(asJson(film)))
+        );
+
         //WHEN
         mockMvc.perform(post("/shows/reservation")
                 .accept(MediaType.APPLICATION_JSON)
@@ -512,6 +521,15 @@ class ShowControllerTest extends PostgresqlContainer {
 
         reservationRepository.save(reservation);
         var savedReservation = reservationRepository.findAll().get(0);
+
+        var film = FilmDtoUtils.createFilmDtoWithId(show.getFilmId());
+
+        mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/films/" + ticket.getFilmId()))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(HttpStatus.OK.value())
+                        .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                        .withBody(asJson(film)))
+        );
 
         //WHEN
         mockMvc.perform(post("/shows/reservation/cancel/" + savedReservation.getUuid())
