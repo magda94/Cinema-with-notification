@@ -2,12 +2,12 @@ package com.notification.service;
 
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
 @SpringBootApplication
 @EnableAutoConfiguration
@@ -18,8 +18,8 @@ public class NotificationServiceApplication {
     }
 
     @Bean
-    public Scheduler scheduler() throws SchedulerException {
-        var scheduler = new StdSchedulerFactory().getScheduler();
+    public Scheduler scheduler(SchedulerFactoryBean factory) throws SchedulerException {
+        var scheduler = factory.getScheduler();
         scheduler.start();
         return scheduler;
     }
