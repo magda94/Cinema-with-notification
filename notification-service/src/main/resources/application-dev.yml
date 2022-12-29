@@ -1,0 +1,30 @@
+server:
+  port: 8083
+spring:
+  kafka:
+    consumer:
+      bootstrap-servers: kafka-cinema:9092
+      group-id: notification
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+    producer:
+      bootstrap-servers: kafka-cinema:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+com:
+  notification:
+    service:
+      kafka:
+        response:
+          topic: notification-response
+        request:
+          reservation:
+            topic: notification-request
+          cancel:
+            topic: cancel-request
