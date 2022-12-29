@@ -30,5 +30,6 @@ public class NotificationConsumer {
     containerFactory = "kafkaCancelListenerContainerFactory")
     public void consumeCancel(ConsumerRecord<String, CancelNotificationRequest> consumerRecord) {
         log.info("Received: {}", consumerRecord.value());
+        notificationJobService.createCancelNotificationJob(consumerRecord.value());
     }
 }
