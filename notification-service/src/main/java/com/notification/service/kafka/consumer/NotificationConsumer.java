@@ -20,7 +20,7 @@ public class NotificationConsumer {
     @KafkaListener(topics = "${com.notification.service.kafka.request.reservation.topic}",
             groupId = "${spring.kafka.consumer.group-id}",
     containerFactory = "kafkaListenerContainerFactory")
-    public void consume(ConsumerRecord<String, NotificationRequest> consumerRecord) throws SchedulerException {
+    public void consume(ConsumerRecord<String, NotificationRequest> consumerRecord) {
         log.info("Received: {}", consumerRecord.value());
         notificationJobService.createNotificationJob(consumerRecord.value());
     }
