@@ -31,7 +31,16 @@ services:
       - film-mongodb
       - kafka-cinema
 
-    # postgresSQL - user-service
+  # notification-service
+  notification-service:
+    container_name: notification-service
+    build: ./notification-service
+    ports:
+      - "8083:8083"
+    networks:
+      - kafka-cinema
+
+  # postgresSQL - user-service
   postgres-user:
     container_name: user_postgres_container
     image: postgres:14.1-alpine
@@ -121,7 +130,7 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-cinema:9092, PLAINTEXT_HOST://localhost:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
     networks:
       - kafka-cinema
 
